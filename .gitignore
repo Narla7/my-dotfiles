@@ -1,0 +1,9 @@
+# Runtime/editor noise
+*.log
+*.bak
+*.swp
+*~
+
+# Private/local state
+.env
+.env.*
