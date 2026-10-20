@@ -256,7 +256,7 @@ PanelWindow {
                         Text {
                             anchors.centerIn: parent
                             text: wsPill.modelData
-                            color: "#ffffff"
+                            color: bar.pal.fg1
                             font.family: bar.pal.font
                             font.pixelSize: 11
                             font.bold: wsPill.focused
@@ -284,7 +284,7 @@ PanelWindow {
                 id: clockText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Qt.formatDateTime(clock.date, "h:mm AP")
-                color: "#ffffff"
+                color: bar.pal.fg1
                 font.family: bar.pal.font
                 font.pixelSize: 12
                 font.bold: true
@@ -335,7 +335,7 @@ PanelWindow {
                         height: 14
                         anchors.verticalCenter: parent.verticalCenter
 
-                        property color tint: "#ffffff"
+                        property color tint: bar.pal.fg1
 
                         onTintChanged: requestPaint()
 
@@ -359,7 +359,7 @@ PanelWindow {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: bar.ramPercent + "%"
-                        color: "#ffffff"
+                        color: bar.pal.fg1
                         font.family: bar.pal.font
                         font.pixelSize: 11
                     }
@@ -385,7 +385,7 @@ PanelWindow {
                         text: bar.wifiConnected
                             ? "wifi " + Math.round(bar.signalStrength * 100) + "%"
                             : "wifi off"
-                        color: bar.wifiConnected ? bar.pal.fg : bar.pal.gray
+                        color: bar.wifiConnected ? bar.pal.fg1 : bar.pal.gray
                         font.family: bar.pal.font
                         font.pixelSize: 11
                     }
@@ -418,7 +418,7 @@ PanelWindow {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "vol " + bar.volPercent + "%"
-                        color: bar.muted ? bar.pal.gray : bar.pal.fg
+                        color: bar.muted ? bar.pal.gray : bar.pal.fg1
                         font.family: bar.pal.font
                         font.pixelSize: 11
                     }
