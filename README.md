@@ -1,6 +1,8 @@
 # Narla's dotfiles
 
-My Arch Linux Hyprland + Quickshell setup, themed with Miasma.
+My Arch Linux Hyprland + Quickshell setup. 
+
+Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 
 ## Included
 
