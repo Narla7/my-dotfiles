@@ -23,6 +23,11 @@ PanelWindow {
     property real ramAvailKb: 0
     property int ramPercent: 0
 
+    // flowstate focus timer, written by ~/.config/hypr/flowstate.sh
+    property string flowPhase: "idle"
+    property int flowSeconds: 0
+    property bool flowPaused: false
+
     readonly property Miasma pal: Miasma {}
 
     anchors {
@@ -74,6 +79,24 @@ PanelWindow {
         refreshWifi();
         volProbe.running = true;
         ramProbe.running = true;
+    }
+
+    function flowAction(cmd) {
+        Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/flowstate.sh", cmd]);
+    }
+
+    // flowstate: reads "phase seconds [paused]" from flowstate.sh's state file
+    Process {
+        id: flowProbe
+        command: ["cat", Quickshell.env("HOME") + "/.local/state/flowstate/bar"]
+        stdout: SplitParser {
+            onRead: line => {
+                var p = line.trim().split(" ");
+                bar.flowPhase = p[0] || "idle";
+                bar.flowSeconds = parseInt(p[1]) || 0;
+                bar.flowPaused = p[2] === "paused";
+            }
+        }
     }
 
     Timer {
@@ -165,6 +188,13 @@ PanelWindow {
         running: true
         repeat: true
         onTriggered: ramProbe.running = true
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: flowProbe.running = true
     }
 
     SystemClock {
@@ -306,13 +336,69 @@ PanelWindow {
             }
         }
 
-        // -------------------------------------------------- RIGHT: ram + wifi + sound
+        // -------------------------------------------------- RIGHT: flowstate + ram + wifi + sound
         Row {
             id: rightGroup
             anchors.right: parent.right
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             spacing: 12
+
+            // ---- flowstate: click open/close, middle pause/resume, right stop ----
+            Rectangle {
+                id: flowWidget
+                anchors.verticalCenter: parent.verticalCenter
+                width: flowRow.implicitWidth + 8
+                height: 22
+                radius: 0
+                color: flowMouse.containsMouse ? bar.pal.bg2 : "transparent"
+
+                Row {
+                    id: flowRow
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "⌖"
+                        color: bar.flowPhase === "idle" ? bar.pal.fg1
+                            : bar.flowPhase === "focus" ? bar.pal.fg1
+                            : "#f7768e"
+                        font.family: bar.pal.font
+                        font.pixelSize: 12
+                        font.bold: bar.flowPhase !== "idle"
+                    }
+
+                    Text {
+                        visible: bar.flowPhase !== "idle"
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: Math.floor(Math.max(0, bar.flowSeconds) / 60) + ":"
+                              + ("0" + (Math.max(0, bar.flowSeconds) % 60)).slice(-2)
+                        color: bar.flowPaused ? bar.pal.gray
+                            : bar.flowPhase === "focus" ? bar.pal.fg1
+                            : "#f7768e"
+                        font.family: bar.pal.font
+                        font.pixelSize: 11
+                    }
+                }
+
+                MouseArea {
+                    id: flowMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+                    onClicked: mouse => {
+                        if (mouse.button === Qt.MiddleButton) {
+                            bar.flowAction("pause");
+                        } else if (mouse.button === Qt.RightButton) {
+                            bar.flowAction("stop");
+                        } else {
+                            bar.flowAction("toggle");
+                        }
+                    }
+                }
+            }
 
             // ---- ram: reads /proc/meminfo ----
             Rectangle {

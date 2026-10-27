@@ -1,29 +1,17 @@
--- ~/.config/hypr/hyprland.lua
--- Narla's Hyprland config — Lua (Hyprland 0.55+ / 0.56)
--- Theme: Omarchy Miasma (github.com/OldJobobo/omarchy-miasma-theme)
---   bg #222222 · fg #c2c2b0 · accent-blue #78824b · cursor #d7c483
--- Old hyprlang config kept at hyprland.conf.bak
 
 local mod = "SUPER + "
 local configHome = os.getenv("XDG_CONFIG_HOME") or ((os.getenv("HOME") or "") .. "/.config")
 
--- ──────────────────────────────────────────────────────────── environment
--- Electron/Chromium apps (zen, obsidian, spotify) pick the Wayland backend.
--- NIXOS_OZONE_WL is the NixOS-only spelling of this; on Arch use this one.
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 hl.env("QT_QPA_PLATFORMTHEME", "kde")
--- Session identity: on NixOS the desktop module exports these; on Arch nothing does,
--- and xdg-desktop-portal / GTK need them.
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 
--- ──────────────────────────────────────────────────────────── monitors (auto)
 hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60", position = "auto", scale = 1 })
 
--- ──────────────────────────────────────────────────────────── look (miasma)
 hl.config({
     general = {
         gaps_in = 5,
@@ -81,15 +69,17 @@ hl.config({
     },
 })
 
--- ──────────────────────────────────────────────────────────── curves/animations
 -- Workspace slide curve.
 hl.curve("fogbank", { type = "bezier", points = { { 0.70, 0.01 }, { 0.30, 1.00 } } })
 
--- Only workspace changes animate. Everything else is deliberately instant.
+-- Only workspace changes animate Everything else is  instant
+
 hl.animation({ leaf = "windows", enabled = false, speed = 0, bezier = "default" })
 hl.animation({ leaf = "windowsIn", enabled = false, speed = 0, bezier = "default" })
 hl.animation({ leaf = "windowsOut", enabled = false, speed = 0, bezier = "default" })
+
 -- Window moves animate; all other window animations stay disabled.
+
 hl.curve("miasma", { type = "bezier", points = { { 0.55, 0.02 }, { 0.38, 0.98 } } })
 hl.animation({ leaf = "windowsMove", enabled = true, speed = 3, bezier = "miasma" })
 hl.animation({ leaf = "border", enabled = false, speed = 0, bezier = "default" })
@@ -113,23 +103,20 @@ hl.workspace_rule({ workspace = "4", persistent = true })
 hl.workspace_rule({ workspace = "5", persistent = true })
 
 -- ──────────────────────────────────────────────────────────── window rules
--- Ignore app maximize requests so Kitty stays in the Dwindle tiling layout.
+-- Ignore app maximize 
 hl.window_rule({
     name = "suppress-maximize-events",
     match = { class = ".*" },
     suppress_event = "maximize",
 })
 
--- Kitty stays tiled like every normal application.
 hl.window_rule({ match = { class = "^(nm-connection-editor)$" }, float = true })
 hl.window_rule({ match = { class = "^(pavucontrol)$" }, float = true })
--- Keep kitty corners square so rounded cutouts don't leak wallpaper/mismatched transparency.
 hl.window_rule({ match = { class = "^(kitty)$" }, rounding = 0, border_size = 2, no_shadow = true })
 
 -- ──────────────────────────────────────────────────────────── keybinds
 -- apps
 hl.bind(mod .. "SPACE", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/toggle-launcher.sh\""))
--- Arch: the AUR zen-browser-bin package installs /usr/bin/zen-browser (not "zen").
 hl.bind(mod .. "SHIFT + RETURN", hl.dsp.exec_cmd("zen-browser"))
 hl.bind(mod .. "SHIFT + F", hl.dsp.exec_cmd("nautilus"))
 hl.bind(mod .. "RETURN", hl.dsp.exec_cmd("kitty"))
@@ -137,8 +124,7 @@ hl.bind(mod .. "SHIFT + O", hl.dsp.exec_cmd("obsidian"))
 hl.bind(mod .. "SHIFT + S", hl.dsp.exec_cmd("spotify"))
 hl.bind(mod .. "SHIFT + C", hl.dsp.exec_cmd("kitty -e opencode"))
 hl.bind(mod .. "SHIFT + Z", hl.dsp.exec_cmd("zeditor"))
--- Resolved from PATH; install hermes-desktop wherever you keep it.
-hl.bind(mod .. "A", hl.dsp.exec_cmd("hermes-desktop"))
+hl.bind(mod .. "A", hl.dsp.exec_cmd("hermes desktop --skip-build"))
 
 -- window management
 hl.bind(mod .. "W", hl.dsp.window.kill())
@@ -152,7 +138,7 @@ for i = 1, 5 do
     hl.bind(mod .. "SHIFT + " .. tostring(i), hl.dsp.window.move({ workspace = tostring(i) }))
 end
 
--- arrow-key focus only (vim letters are intentionally not bound)
+-- arrowkey focus 
 hl.bind(mod .. "left", hl.dsp.focus({ direction = "l" }))
 hl.bind(mod .. "down", hl.dsp.focus({ direction = "d" }))
 hl.bind(mod .. "up", hl.dsp.focus({ direction = "u" }))
@@ -173,7 +159,7 @@ hl.bind(mod .. "SHIFT + right", function() moveFocused("r") end)
 hl.bind(mod .. "mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(mod .. "mouse:273", hl.dsp.window.resize(), { mouse = true })
 
--- media keys (locked = keep working while the launcher/menu grabs keys)
+-- media keys 
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
@@ -189,9 +175,11 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"), { loc
 -- ──────────────────────────────────────────────────────────── autostart
 hl.on("hyprland.start", function()
     -- Make the session env visible to the systemd user manager and D-Bus, so
-    -- portals, screen sharing and file pickers work. NixOS did this for you.
+    -- portals, screen sharing and file pickers work. 
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE")
     hl.exec_cmd("quickshell")
     -- own org.freedesktop.Notifications from session start (dunst)
     hl.exec_cmd("dunst")
 end)
+
+hl.bind(mod .. "SHIFT + L", hl.dsp.exec_cmd("kitty -e bash " .. configHome .. "/hypr/flowstate.sh run"))
