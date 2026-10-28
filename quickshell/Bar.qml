@@ -223,37 +223,16 @@ PanelWindow {
                 radius: 4
                 color: logoMouse.containsMouse ? bar.pal.bg2 : "transparent"
 
-                Canvas {
+                // Real Arch Linux mark, loaded from arch.svg next to this file.
+                Image {
                     anchors.centerIn: parent
                     width: 17
                     height: 17
-                    property color tint: bar.pal.gold
-
-                    onPaint: {
-                        var ctx = getContext("2d");
-                        ctx.reset();
-                        ctx.fillStyle = tint;
-                        ctx.beginPath();
-                        // Compact Arch Linux mountain/A silhouette.
-                        ctx.moveTo(8.5, 1);
-                        ctx.lineTo(2, 16);
-                        ctx.lineTo(6.5, 13.5);
-                        ctx.lineTo(8.5, 9);
-                        ctx.lineTo(10.5, 9);
-                        ctx.lineTo(12.5, 13.5);
-                        ctx.lineTo(17, 16);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Inner cutout gives the mark its characteristic peak.
-                        ctx.globalCompositeOperation = "destination-out";
-                        ctx.beginPath();
-                        ctx.moveTo(8.5, 6.5);
-                        ctx.lineTo(7.2, 10.5);
-                        ctx.lineTo(9.8, 10.5);
-                        ctx.closePath();
-                        ctx.fill();
-                    }
+                    source: Qt.resolvedUrl("arch.svg")
+                    sourceSize: Qt.size(width * 2, height * 2)
+                    fillMode: Image.PreserveAspectFit
+                    mipmap: true
+                    smooth: true
                 }
 
                 MouseArea {
