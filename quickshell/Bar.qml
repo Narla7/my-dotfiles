@@ -39,6 +39,16 @@ PanelWindow {
         right: true
     }
 
+    // when the clipboard centre (gruvbox column, 380px) is open, pull the
+    // bar's right edge out of the way with the same slide timing
+    margins.right: shell.clipboardOpen ? 380 : 0
+    Behavior on margins.right {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.OutCubic
+        }
+    }
+
     implicitHeight: pal.barHeight
     color: "transparent"
     exclusiveZone: pal.barHeight
