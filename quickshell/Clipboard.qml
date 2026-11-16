@@ -70,7 +70,9 @@ PanelWindow {
         clipList.running = true;
     }
 
-    onVisibleChanged: if (visible) clipWindow.refresh()
+    // the window is always visible (open/close resizes it), so hook the
+    // open state instead — re-list every time the centre opens
+    onOpenChanged: if (open) clipWindow.refresh()
 
     Component.onCompleted: clipWindow.refresh()
 
