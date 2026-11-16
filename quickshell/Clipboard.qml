@@ -27,14 +27,14 @@ PanelWindow {
     readonly property int maxItems: 25
     // decode cache dir for image thumbnails
     readonly property string cacheDir: "/tmp/qs-clip"
-    readonly property int barHeight: 30
 
     anchors {
-        top: true
         right: true
         bottom: true
     }
-    margins.top: barHeight
+    // full monitor height, bottom-anchored: not anchored top, so the bar's
+    // exclusive zone can't push us down — the panel reaches y=0
+    implicitHeight: clipWindow.screen.height
     // closed: shove the leftover surface offscreen so it can't eat clicks
     margins.right: open ? 0 : -16
     implicitWidth: open ? panelWidth : 15
