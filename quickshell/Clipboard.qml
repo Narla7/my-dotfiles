@@ -20,7 +20,6 @@ PanelWindow {
     readonly property color gBorder: "#504945"  // gray
     readonly property color gFg: "#ebdbb2"      // fg
     readonly property color gMuted: "#a89984"   // fg4
-    readonly property color gRed: "#cc241d"
     readonly property color gAccent: "#78824b"  // olive accent, matches focus border / fuzzel
 
     readonly property int panelWidth: 380
@@ -275,27 +274,21 @@ PanelWindow {
                         }
 
                         // per-item remove button, centered on the right edge
-                        Rectangle {
+                        Text {
                             id: xBtn
                             z: 1
                             anchors.right: parent.right
-                            anchors.rightMargin: 6
+                            anchors.rightMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
-                            width: 18
-                            height: 18
-                            radius: 9
-                            color: xMouse.containsMouse ? clipWindow.gRed : "transparent"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "✕"
-                                color: xMouse.containsMouse ? clipWindow.gBgRow : clipWindow.gMuted
-                                font.pixelSize: 10
-                            }
+                            text: "✕"
+                            color: xMouse.containsMouse ? clipWindow.gFg : clipWindow.gMuted
+                            font.family: "JetBrains Mono"
+                            font.pixelSize: 11
 
                             MouseArea {
                                 id: xMouse
                                 anchors.fill: parent
+                                anchors.margins: -4
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: clipWindow.deleteItem(row.index, row.model.id, row.model.line)
