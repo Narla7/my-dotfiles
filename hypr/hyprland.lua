@@ -132,6 +132,7 @@ hl.bind(mod .. "SHIFT + RETURN", hl.dsp.exec_cmd("zen-browser"))
 hl.bind(mod .. "SHIFT + F", hl.dsp.exec_cmd("nautilus"))
 hl.bind(mod .. "RETURN", hl.dsp.exec_cmd("kitty"))
 hl.bind(mod .. "E", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/emoji-picker.sh\""))
+hl.bind(mod .. "C", hl.dsp.exec_cmd("qs ipc call bar clipboard"))
 hl.bind(mod .. "SHIFT + O", hl.dsp.exec_cmd("obsidian"))
 hl.bind(mod .. "SHIFT + S", hl.dsp.exec_cmd("spotify"))
 hl.bind(mod .. "SHIFT + C", hl.dsp.exec_cmd("kitty -e opencode"))
@@ -200,6 +201,8 @@ hl.on("hyprland.start", function()
     -- Make the session env visible to the systemd user manager and D-Bus, so
     -- portals, screen sharing and file pickers work. 
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE")
+    -- clipboard history daemon: every paste-able selection gets stored by cliphist
+    hl.exec_cmd("pkill -f 'wl-paste --watch cliphist store' 2>/dev/null; wl-paste --watch cliphist store &")
     hl.exec_cmd("quickshell")
 end)
 

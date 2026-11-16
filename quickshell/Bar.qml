@@ -409,6 +409,46 @@ PanelWindow {
                 }
             }
 
+            // ---- clipboard: opens the clipboard history panel ----
+            Rectangle {
+                id: clipWidget
+                anchors.verticalCenter: parent.verticalCenter
+                width: 26
+                height: 22
+                radius: 0
+                color: clipMouse.containsMouse ? bar.pal.bg2 : "transparent"
+
+                Canvas {
+                    id: clipIcon
+                    width: 14
+                    height: 14
+                    anchors.centerIn: parent
+
+                    property color tint: bar.shell.clipboardOpen ? bar.pal.gold : bar.pal.fg1
+
+                    onTintChanged: requestPaint()
+
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.reset();
+                        ctx.strokeStyle = tint;
+                        ctx.lineWidth = 1.2;
+                        // board
+                        ctx.strokeRect(2.5, 2.5, 9, 10);
+                        // clip on top
+                        ctx.strokeRect(5.5, 0.8, 3, 3);
+                    }
+                }
+
+                MouseArea {
+                    id: clipMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: bar.shell.openClipboard()
+                }
+            }
+
             // ---- ram: reads /proc/meminfo ----
             Rectangle {
                 id: ramWidget

@@ -10,6 +10,11 @@ ShellRoot {
 
     function closeAllBut(which) {
         calendarOpen = which === "calendar";
+        clipboardOpen = which === "clipboard";
+    }
+
+    function openClipboard() {
+        closeAllBut(clipboardOpen ? "" : "clipboard");
     }
 
     function openAppLauncher() {
@@ -35,6 +40,15 @@ ShellRoot {
         shell: root
     }
 
+    Notifications {
+        id: notifications
+        shell: root
+    }
+
+    Clipboard {
+        shell: root
+    }
+
     IpcHandler {
         target: "bar"
 
@@ -46,9 +60,24 @@ ShellRoot {
             root.openAudioMenu();
         }
 
+        function clipboard() {
+            root.openClipboard();
+        }
+
         function close() {
             root.closeAllBut("");
         }
     }
 
+    IpcHandler {
+        target: "notifications"
+
+        function dismiss() {
+            notifications.dismissAll();
+        }
+
+        function dismissAll() {
+            notifications.dismissAll();
+        }
+    }
 }
