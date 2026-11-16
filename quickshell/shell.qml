@@ -7,6 +7,7 @@ ShellRoot {
     id: root
 
     property bool calendarOpen: false
+    property bool clipboardOpen: false
 
     function closeAllBut(which) {
         calendarOpen = which === "calendar";
