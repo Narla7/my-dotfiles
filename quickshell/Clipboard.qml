@@ -85,7 +85,9 @@ PanelWindow {
     function deleteItem(index, id, line) {
         Quickshell.execDetached(["bash", "-c",
             "printf '%s' \"$1\" | cliphist delete", "clipdel", line]);
-        clipModel.remove(index, 1);
+        // cliphist renumbers remaining items after a delete, so re-list
+        // instead of just dropping the row (keeps later copies/deletes valid)
+        clipWindow.refresh();
     }
 
     function clearAll() {
@@ -93,9 +95,10 @@ PanelWindow {
         clipModel.clear();
     }
 
+    // cliphist calls this "wipe" ("clear" is not a real subcommand)
     Process {
         id: clearProc
-        command: ["cliphist", "clear"]
+        command: ["cliphist", "wipe"]
         onExited: clipWindow.refresh()
     }
 
@@ -251,6 +254,7 @@ PanelWindow {
                         // per-item remove button, centered on the right edge
                         Rectangle {
                             id: xBtn
+                            z: 1
                             anchors.right: parent.right
                             anchors.rightMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
