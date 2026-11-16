@@ -21,7 +21,7 @@ PanelWindow {
     readonly property color gFg: "#ebdbb2"      // fg
     readonly property color gMuted: "#a89984"   // fg4
     readonly property color gRed: "#cc241d"
-    readonly property color gYellow: "#d79921"
+    readonly property color gAccent: "#78824b"  // olive accent, matches focus border / fuzzel
 
     readonly property int panelWidth: 380
     readonly property int maxItems: 25
@@ -165,7 +165,7 @@ PanelWindow {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
                         text: "clipboard"
-                        color: clipWindow.gYellow
+                        color: clipWindow.gAccent
                         font.family: "JetBrains Mono"
                         font.pixelSize: 13
                         font.bold: true
