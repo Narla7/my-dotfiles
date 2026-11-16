@@ -138,7 +138,7 @@ PanelWindow {
             height: parent.height
             color: clipWindow.gBg
             border.width: 1
-            border.color: clipWindow.gBorder
+            border.color: clipWindow.gAccent
 
             transform: Translate {
                 id: slide
