@@ -17,6 +17,9 @@ PanelWindow {
     // sound state, driven by wpctl (quickshell's pipewire node binding is broken in 0.3.1)
     property int volPercent: 0
     property bool muted: false
+    // false while the audio backend (pipewire) is unreachable, so the bar shows "vol --"
+    // instead of pretending the sink is at 0%
+    property bool volOk: true
 
     // ram state, read straight from /proc/meminfo (no extra tools required)
     property real ramTotalKb: 0
@@ -118,16 +121,23 @@ PanelWindow {
             onRead: line => {
                 var m = line.match(/Volume:\s*([\d.]+)/);
                 if (m) {
+                    bar.volOk = true;
                     bar.volPercent = Math.round(parseFloat(m[1]) * 100);
                     bar.muted = line.indexOf("MUTED") >= 0;
                 }
             }
         }
+        onExited: code => { if (code !== 0) bar.volOk = false; }
     }
 
     Process {
         id: volSet
-        command: ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "50%"]
+        command: ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "10%+"]
+    }
+
+    Process {
+        id: muteOffProc
+        command: ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "0"]
     }
 
     Process {
@@ -149,12 +159,26 @@ PanelWindow {
         onTriggered: volProbe.running = true
     }
 
-    function bumpVolume(delta) {
-        var pct = Math.max(0, Math.min(100, bar.volPercent + (delta > 0 ? 10 : -10)));
-        volSet.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", pct + "%"];
-        volSet.running = false;
-        volSet.running = true;
-        afterVol.restart();
+    // coalesces a burst of wheel events into one wpctl call (wpctl starts in ~30ms,
+    // wheel events can arrive faster than that, so an immediate start would race)
+    Timer {
+        id: volBumpTimer
+        interval: 40
+        repeat: false
+        onTriggered: {
+            volSet.running = false;
+            volSet.running = true;
+            afterVol.restart();
+        }
+    }
+
+    // bump ±10% on the sink itself so repeated quick scrolls accumulate correctly;
+    // reading bar.volPercent as the base would reuse a possibly 2s-stale value
+    function bumpVolume(up) {
+        volSet.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", up ? "10%+" : "10%-"];
+        if (up && bar.muted)
+            muteOffProc.running = true;
+        volBumpTimer.restart();
     }
 
     // ---------------------------------------------------------------- ram via /proc/meminfo
@@ -249,15 +273,21 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 4
 
+                // Scratchpad-aware focused workspace. When a special workspace
+                // (id < 0) is toggled on top, keep the underlying workspace's
+                // pill lit so the bar looks unchanged.
+                property int focusedRegularWs: {
+                    const id = Hyprland.focusedWorkspace?.id;
+                    return id > 0 ? id : focusedRegularWs;
+                }
+
                 Repeater {
                     model: [1, 2, 3, 4, 5]
 
                     delegate: Item {
                         id: wsPill
                         required property int modelData
-                        readonly property bool focused: Hyprland.focusedWorkspace !== null
-                            && Hyprland.focusedWorkspace !== undefined
-                            && Hyprland.focusedWorkspace.id === wsPill.modelData
+                        readonly property bool focused: leftGroup.focusedRegularWs === wsPill.modelData
 
                         width: 14
                         height: 19
@@ -482,8 +512,8 @@ PanelWindow {
 
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "vol " + bar.volPercent + "%"
-                        color: bar.muted ? bar.pal.gray : bar.pal.fg1
+                        text: bar.volOk ? "vol " + bar.volPercent + "%" : "vol --"
+                        color: (bar.muted || !bar.volOk) ? bar.pal.gray : bar.pal.fg1
                         font.family: bar.pal.font
                         font.pixelSize: 11
                     }
@@ -505,7 +535,7 @@ PanelWindow {
                         }
                     }
                     onWheel: wheel => {
-                        bar.bumpVolume(wheel.angleDelta.y > 0 ? 0.05 : -0.05);
+                        bar.bumpVolume(wheel.angleDelta.y > 0);
                         wheel.accepted = true;
                     }
                 }

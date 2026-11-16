@@ -13,6 +13,13 @@ hl.env("HYPRCURSOR_SIZE", "24")
 hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60", position = "auto", scale = 1 })
 
 hl.config({
+    -- Hyprland 0.57 flipped this quirk to true by default. On older Intel GPUs
+    -- (Haswell/Ivy Bridge) that hides every dmabuf format with an alpha channel,
+    -- which makes transparent layer surfaces (quickshell bar) render black and
+    -- makes EGL clients (kitty) fail with "No EGLConfigs returned".
+    quirks = {
+        skip_non_kms_dmabuf_formats = false,
+    },
     general = {
         gaps_in = 5,
         gaps_out = 10,
@@ -102,6 +109,10 @@ hl.workspace_rule({ workspace = "3", persistent = true })
 hl.workspace_rule({ workspace = "4", persistent = true })
 hl.workspace_rule({ workspace = "5", persistent = true })
 
+-- scratchpad that overlays whatever workspace is focused (mod+S toggles it).
+-- Persistent so it exists from boot and empty-toggle stays seamless.
+hl.workspace_rule({ workspace = "special:scratch", persistent = true })
+
 -- ──────────────────────────────────────────────────────────── window rules
 -- Ignore app maximize 
 hl.window_rule({
@@ -120,6 +131,7 @@ hl.bind(mod .. "SPACE", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/toggle
 hl.bind(mod .. "SHIFT + RETURN", hl.dsp.exec_cmd("zen-browser"))
 hl.bind(mod .. "SHIFT + F", hl.dsp.exec_cmd("nautilus"))
 hl.bind(mod .. "RETURN", hl.dsp.exec_cmd("kitty"))
+hl.bind(mod .. "E", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/emoji-picker.sh\""))
 hl.bind(mod .. "SHIFT + O", hl.dsp.exec_cmd("obsidian"))
 hl.bind(mod .. "SHIFT + S", hl.dsp.exec_cmd("spotify"))
 hl.bind(mod .. "SHIFT + C", hl.dsp.exec_cmd("kitty -e opencode"))
@@ -127,10 +139,20 @@ hl.bind(mod .. "SHIFT + Z", hl.dsp.exec_cmd("zeditor"))
 hl.bind(mod .. "A", hl.dsp.exec_cmd("hermes desktop --skip-build"))
 
 -- window management
-hl.bind(mod .. "W", hl.dsp.window.kill())
+-- close() asks the app to close just the focused window (graceful, like
+-- clicking its X button). kill() SIGKILLs the entire client process, which
+-- also takes down every other window of that app (browsers, Electron, etc.
+-- run all windows in one process) — so it's only for frozen apps.
+hl.bind(mod .. "W", hl.dsp.window.close())
+hl.bind(mod .. "SHIFT + W", hl.dsp.window.kill())
 hl.bind(mod .. "F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mod .. "V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mod .. "ESCAPE", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/system-menu.sh\""))
+
+-- scratchpad overlay: toggles on top of the current workspace, instantly
+-- (specialWorkspace animations are disabled above). Windows stay parked here
+-- across workspace switches.
+hl.bind(mod .. "S", hl.dsp.workspace.toggle_special("scratch"))
 
 -- workspaces 1-5: switch + move window
 for i = 1, 5 do
@@ -169,6 +191,7 @@ hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ to
 
 -- screenshot / brightness
 hl.bind("PRINT", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/toggle-screenshot.sh\""))
+hl.bind(mod .. "period", hl.dsp.exec_cmd("qs ipc call notifications dismissAll"))
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl set +5%"), { locked = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"), { locked = true })
 
@@ -178,8 +201,6 @@ hl.on("hyprland.start", function()
     -- portals, screen sharing and file pickers work. 
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE")
     hl.exec_cmd("quickshell")
-    -- own org.freedesktop.Notifications from session start (dunst)
-    hl.exec_cmd("dunst")
 end)
 
 hl.bind(mod .. "SHIFT + L", hl.dsp.exec_cmd("kitty -e bash " .. configHome .. "/hypr/flowstate.sh run"))
