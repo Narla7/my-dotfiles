@@ -424,7 +424,7 @@ PanelWindow {
                     height: 14
                     anchors.centerIn: parent
 
-                    property color tint: bar.shell.clipboardOpen ? bar.pal.gold : bar.pal.fg1
+                    property color tint: bar.shell.clipboardOpen ? "#d79921" : bar.pal.fg1
 
                     onTintChanged: requestPaint()
 

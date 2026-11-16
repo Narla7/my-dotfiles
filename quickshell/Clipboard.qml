@@ -3,33 +3,54 @@ import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 
-// Clipboard history panel, top-right below the bar. Backed by cliphist
-// (wl-paste --watch cliphist store, started in hyprland.lua) so images work.
-// Slides in fast from the right edge; never full-screen.
+// Clipboard history "centre": full-height column on the right edge, gruvbox.
+// Reserves screen space via layer-shell exclusive zone, so Hyprland slides
+// tiled windows out of the way when it opens (windowsMove animation).
+// Backed by cliphist (wl-paste --watch cliphist store, started in hyprland.lua).
 PanelWindow {
     id: clipWindow
 
     property var shell
-    readonly property Miasma pal: Miasma {}
+    readonly property bool open: shell.clipboardOpen
+
+    // gruvbox dark
+    readonly property color gBg: "#282828"      // bg0
+    readonly property color gBg1: "#3c3836"     // bg1 (hover)
+    readonly property color gBgRow: "#1d2021"   // bg0_h (rows)
+    readonly property color gBorder: "#504945"  // gray
+    readonly property color gFg: "#ebdbb2"      // fg
+    readonly property color gMuted: "#a89984"   // fg4
+    readonly property color gRed: "#cc241d"
+    readonly property color gYellow: "#d79921"
+
     readonly property int panelWidth: 380
-    readonly property int panelHeight: 540
     readonly property int maxItems: 25
     // decode cache dir for image thumbnails
     readonly property string cacheDir: "/tmp/qs-clip"
+    readonly property int barHeight: 30
 
     anchors {
         top: true
         right: true
+        bottom: true
     }
-    margins.top: pal.barHeight + 6
-    implicitWidth: panelWidth
-    implicitHeight: shell.clipboardOpen ? panelHeight : 1
+    margins.top: barHeight
+    // closed: shove the leftover surface offscreen so it can't eat clicks
+    margins.right: open ? 0 : -16
+    implicitWidth: open ? panelWidth : 15
     color: "transparent"
-    exclusiveZone: 0
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
+    exclusiveZone: open ? panelWidth : 0
+    exclusionMode: ExclusionMode.Normal
+    WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "quickshell-clipboard"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+
+    Behavior on implicitWidth {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.OutCubic
+        }
+    }
 
     // ---- history model, filled by `cliphist list` --------------------
     ListModel { id: clipModel }
@@ -90,12 +111,11 @@ PanelWindow {
         clipWindow.refresh();
     }
 
+    // cliphist calls this "wipe" ("clear" is not a real subcommand)
     function clearAll() {
         clearProc.running = true;
-        clipModel.clear();
     }
 
-    // cliphist calls this "wipe" ("clear" is not a real subcommand)
     Process {
         id: clearProc
         command: ["cliphist", "wipe"]
@@ -112,14 +132,14 @@ PanelWindow {
         Rectangle {
             id: card
             width: clipWindow.panelWidth
-            height: clipWindow.panelHeight
-            color: clipWindow.pal.bg1
+            height: parent.height
+            color: clipWindow.gBg
             border.width: 1
-            border.color: clipWindow.pal.bg3
+            border.color: clipWindow.gBorder
 
             transform: Translate {
                 id: slide
-                x: clipWindow.shell.clipboardOpen ? 0 : clipWindow.panelWidth + 12
+                x: clipWindow.open ? 0 : clipWindow.panelWidth + 12
                 Behavior on x {
                     NumberAnimation {
                         duration: 200
@@ -142,8 +162,8 @@ PanelWindow {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
                         text: "clipboard"
-                        color: clipWindow.pal.fg
-                        font.family: clipWindow.pal.font
+                        color: clipWindow.gYellow
+                        font.family: "JetBrains Mono"
                         font.pixelSize: 13
                         font.bold: true
                     }
@@ -155,16 +175,16 @@ PanelWindow {
                         width: clearText.implicitWidth + 14
                         height: 20
                         radius: 0
-                        color: clearMouse.containsMouse ? clipWindow.pal.bg2 : "transparent"
+                        color: clearMouse.containsMouse ? clipWindow.gBg1 : "transparent"
                         border.width: 1
-                        border.color: clipWindow.pal.bg3
+                        border.color: clipWindow.gBorder
 
                         Text {
                             id: clearText
                             anchors.centerIn: parent
                             text: "clear all"
-                            color: clipWindow.pal.fg1
-                            font.family: clipWindow.pal.font
+                            color: clearMouse.containsMouse ? clipWindow.gFg : clipWindow.gMuted
+                            font.family: "JetBrains Mono"
                             font.pixelSize: 10
                         }
 
@@ -195,7 +215,7 @@ PanelWindow {
                         width: list.width
                         height: 52
                         radius: 0
-                        color: rowMouse.containsMouse ? clipWindow.pal.bg2 : clipWindow.pal.bg0
+                        color: rowMouse.containsMouse ? clipWindow.gBg1 : clipWindow.gBgRow
 
                         // decode image entries to the cache dir, then show them
                         Process {
@@ -221,8 +241,8 @@ PanelWindow {
                             text: row.model.preview
                             elide: Text.ElideRight
                             maximumLineCount: 1
-                            color: clipWindow.pal.fg
-                            font.family: clipWindow.pal.font
+                            color: clipWindow.gFg
+                            font.family: "JetBrains Mono"
                             font.pixelSize: 11
                         }
 
@@ -246,8 +266,8 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             text: row.model.label
                             elide: Text.ElideRight
-                            color: clipWindow.pal.fg1
-                            font.family: clipWindow.pal.font
+                            color: clipWindow.gMuted
+                            font.family: "JetBrains Mono"
                             font.pixelSize: 11
                         }
 
@@ -261,12 +281,12 @@ PanelWindow {
                             width: 18
                             height: 18
                             radius: 9
-                            color: xMouse.containsMouse ? clipWindow.pal.red : "transparent"
+                            color: xMouse.containsMouse ? clipWindow.gRed : "transparent"
 
                             Text {
                                 anchors.centerIn: parent
                                 text: "✕"
-                                color: xMouse.containsMouse ? clipWindow.pal.bg0 : clipWindow.pal.gray
+                                color: xMouse.containsMouse ? clipWindow.gBgRow : clipWindow.gMuted
                                 font.pixelSize: 10
                             }
 
