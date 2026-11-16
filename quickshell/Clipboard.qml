@@ -39,8 +39,9 @@ PanelWindow {
     margins.right: open ? 0 : -16
     implicitWidth: open ? panelWidth : 15
     color: "transparent"
-    exclusiveZone: open ? panelWidth : 0
-    exclusionMode: ExclusionMode.Normal
+    // the spacer window (shell.qml) reserves the right edge; this one only draws
+    exclusiveZone: -1
+    exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "quickshell-clipboard"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
