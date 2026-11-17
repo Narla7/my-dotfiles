@@ -1,0 +1,11 @@
+[Unit]
+Description=Clipboard history daemon (cliphist store via wl-paste --watch)
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/wl-paste --watch cliphist store
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

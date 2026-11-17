@@ -201,8 +201,9 @@ hl.on("hyprland.start", function()
     -- Make the session env visible to the systemd user manager and D-Bus, so
     -- portals, screen sharing and file pickers work. 
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE")
-    -- clipboard history daemon: every paste-able selection gets stored by cliphist
-    hl.exec_cmd("pkill -f 'wl-paste --watch cliphist store' 2>/dev/null; wl-paste --watch cliphist store &")
+    -- clipboard history: systemd user unit (~/.config/systemd/user/cliphist.service),
+    -- enabled + Restart=always, so it survives boots and crashes on its own
+    hl.exec_cmd("systemctl --user enable --now cliphist.service")
     hl.exec_cmd("quickshell")
 end)
 
