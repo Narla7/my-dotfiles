@@ -3,6 +3,9 @@
 # Enter    = copy emoji to clipboard (wl-copy) — mouse click also copies
 # Ctrl+f   = toggle favourite (⭐), favourites are listed first
 # Ctrl+Shift+Up / Ctrl+Shift+Down = reorder favourites
+# Up/Down  = move a row (both columns at once)
+# Left/Right = move one emoji left/right within the row
+# Mouse wheel = scroll a full page of the menu
 # Esc      = quit
 
 set -euo pipefail
@@ -87,7 +90,10 @@ while true; do
     rc=0
     choice="$(build_list | rofi -dmenu \
         -i -p 'emoji' -name emoji-picker -theme "$THEME" \
+        -kb-move-char-back "" \
         -kb-move-char-forward "" \
+        -kb-row-left "Left" \
+        -kb-row-right "Right" \
         -kb-custom-1 "Ctrl+f" \
         -kb-custom-2 "Control+Shift+Up" \
         -kb-custom-3 "Control+Shift+Down")" || rc=$?

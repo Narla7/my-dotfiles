@@ -9,20 +9,26 @@ ShellRoot {
 
     property bool calendarOpen: false
     property bool clipboardOpen: false
+    property bool emojiOpen: false
     property bool launcherOpen: false
     property bool systemMenuOpen: false
 
-    readonly property bool sidePanelOpen: clipboardOpen || launcherOpen || systemMenuOpen
+    readonly property bool sidePanelOpen: calendarOpen || clipboardOpen || emojiOpen || launcherOpen || systemMenuOpen
 
     function closeAllBut(which) {
         calendarOpen = which === "calendar";
         clipboardOpen = which === "clipboard";
+        emojiOpen = which === "emoji";
         launcherOpen = which === "launcher";
         systemMenuOpen = which === "system";
     }
 
     function openClipboard() {
         closeAllBut(clipboardOpen ? "" : "clipboard");
+    }
+
+    function openCalendar() {
+        closeAllBut(calendarOpen ? "" : "calendar");
     }
 
     function openAppLauncher() {
@@ -37,6 +43,10 @@ ShellRoot {
         Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/wifi-menu.sh"]);
     }
 
+    function openEmojiPicker() {
+        closeAllBut(emojiOpen ? "" : "emoji");
+    }
+
     function openAudioMenu() {
         Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/audio-menu.sh"]);
     }
@@ -48,6 +58,10 @@ ShellRoot {
     }
 
     Calendar {
+        shell: root
+    }
+
+    EmojiPicker {
         shell: root
     }
 
@@ -100,6 +114,14 @@ ShellRoot {
 
         function clipboard() {
             root.openClipboard();
+        }
+
+        function emoji() {
+            root.openEmojiPicker();
+        }
+
+        function calendar() {
+            root.openCalendar();
         }
 
         function launcher() {

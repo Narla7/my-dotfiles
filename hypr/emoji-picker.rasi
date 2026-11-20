@@ -14,6 +14,8 @@
     background-color: transparent;
     text-color: @fg;
     font: "JetBrains Mono 12";
+    // mouse wheel scrolls a whole page of the menu, not one emoji at a time
+    scroll-method: 0;
 }
 
 window {

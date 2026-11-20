@@ -1,20 +1,37 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Layouts
 
-// Omarchy-inspired calendar: centered month grid, ISO week numbers, month stepping.
-PanelWindow {
+// Calendar sidebar — right-edge column like the clipboard/launcher. Shows the
+// current month's days only (no week numbers), a progress bar for how much of
+// the month has passed, left/right month stepping (buttons and arrow keys),
+// and a 1px outline on today. mod+C toggles it.
+SidePanelWindow {
     id: calendar
 
     property var shell
-    readonly property Miasma pal: Miasma {}
+    open: !!calendar.shell && calendar.shell.calendarOpen
+    title: "calendar"
+    namespace: "quickshell-calendar"
+
     property date shownMonth: new Date()
     readonly property date today: new Date()
     readonly property int year: shownMonth.getFullYear()
     readonly property int month: shownMonth.getMonth()
     readonly property var weekdays: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
     readonly property var cells: makeCells()
+
+    // fraction of the shown month that has already passed: 0..1
+    readonly property real monthProgress: {
+        var days = daysInMonth(year, month);
+        var diff = (today.getFullYear() - year) * 12 + (today.getMonth() - month);
+        if (diff > 0)
+            return 1; // a past month: fully over
+        if (diff < 0)
+            return 0; // a future month: not started
+        // current month: elapsed days / total days
+        return today.getDate() / days;
+    }
 
     function daysInMonth(y, m) {
         return new Date(y, m + 1, 0).getDate();
@@ -23,14 +40,6 @@ PanelWindow {
     function mondayIndex(y, m) {
         var day = new Date(y, m, 1).getDay();
         return (day + 6) % 7;
-    }
-
-    function isoWeek(y, m, d) {
-        var date = new Date(y, m, d);
-        date.setHours(0, 0, 0, 0);
-        date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
-        var week1 = new Date(date.getFullYear(), 0, 4);
-        return 1 + Math.round(((date - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
     }
 
     function makeCells() {
@@ -52,100 +61,65 @@ PanelWindow {
         calendar.shownMonth = new Date(year, month + delta, 1);
     }
 
-    function resetToday() {
+    onOpenChanged: if (open) {
         calendar.shownMonth = new Date();
+        focusGrab.forceActiveFocus();
     }
 
-    visible: shell.calendarOpen
-    anchors {
-        top: true
-        left: true
-        right: true
-    }
-    margins.top: pal.barHeight + 6
-    implicitHeight: card.implicitHeight
-    color: "transparent"
-    exclusiveZone: 0
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "quickshell-calendar"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-
-    onVisibleChanged: if (visible) calendar.resetToday()
-
-    Rectangle {
-        id: card
-        width: 330
-        implicitHeight: content.implicitHeight + 24
-        radius: 0
-        color: calendar.pal.bg1
-        border.width: 1
-        border.color: calendar.pal.bg2
+    Item {
+        anchors.fill: parent
 
         Column {
-            id: content
             anchors.fill: parent
-            anchors.margins: 12
             spacing: 10
 
-            RowLayout {
+            // month progress: "how much of the month is over"
+            Item {
                 width: parent.width
-                height: 28
+                height: 26
 
                 Text {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
                     text: Qt.formatDate(calendar.shownMonth, "MMMM yyyy")
-                    color: calendar.pal.fg
+                    color: calendar.pal.accent
                     font.family: calendar.pal.font
-                    font.pixelSize: 14
+                    font.pixelSize: 13
                     font.bold: true
-                    Layout.fillWidth: true
                 }
 
-                Rectangle {
-                    width: 34
-                    height: 26
-                    color: previousMouse.containsMouse ? calendar.pal.bg2 : "transparent"
-                    Text { anchors.centerIn: parent; text: "prev"; color: calendar.pal.fg; font.family: calendar.pal.font; font.pixelSize: 11 }
-                    MouseArea {
-                        id: previousMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: calendar.shiftMonth(-1)
-                    }
+                Text {
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Math.round(calendar.monthProgress * 100) + "%"
+                    color: calendar.pal.muted
+                    font.family: calendar.pal.font
+                    font.pixelSize: 11
                 }
+            }
+
+            Rectangle {
+                width: parent.width
+                height: 6
+                color: calendar.pal.border
 
                 Rectangle {
-                    width: 34
-                    height: 26
-                    color: nextMouse.containsMouse ? calendar.pal.bg2 : "transparent"
-                    Text { anchors.centerIn: parent; text: "next"; color: calendar.pal.fg; font.family: calendar.pal.font; font.pixelSize: 11 }
-                    MouseArea {
-                        id: nextMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: calendar.shiftMonth(1)
-                    }
+                    width: parent.width * calendar.monthProgress
+                    height: parent.height
+                    color: calendar.pal.accent
                 }
             }
 
             Row {
                 width: parent.width
                 spacing: 0
-                Text {
-                    width: 28
-                    text: "W"
-                    color: calendar.pal.gray
-                    font.family: calendar.pal.font
-                    font.pixelSize: 10
-                    horizontalAlignment: Text.AlignHCenter
-                }
                 Repeater {
                     model: calendar.weekdays
                     delegate: Text {
                         required property string modelData
-                        width: 40
+                        width: parent.width / 7
                         text: modelData
-                        color: calendar.pal.gray
+                        color: calendar.pal.muted
                         font.family: calendar.pal.font
                         font.pixelSize: 10
                         horizontalAlignment: Text.AlignHCenter
@@ -154,36 +128,31 @@ PanelWindow {
             }
 
             Column {
+                width: parent.width
                 spacing: 2
                 Repeater {
                     model: 6
                     delegate: Row {
                         id: dayRow
                         required property int index
+                        width: parent.width
                         spacing: 0
-                        Text {
-                            width: 28
-                            height: 28
-                            text: calendar.isoWeek(calendar.year, calendar.month, Math.max(1, index * 7 - calendar.mondayIndex(calendar.year, calendar.month) + 1))
-                            color: calendar.pal.gray
-                            font.family: calendar.pal.font
-                            font.pixelSize: 10
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-                        }
                         Repeater {
                             model: 7
                             delegate: Rectangle {
                                 required property int index
                                 readonly property var cell: calendar.cells[dayRow.index * 7 + index]
-                                width: 40
-                                height: 28
-                                color: cell.today ? calendar.pal.gold : "transparent"
+                                width: dayRow.width / 7
+                                height: 32
+                                radius: 0
+                                color: "transparent"
+                                border.width: cell.today ? 1 : 0
+                                border.color: calendar.pal.accent
 
                                 Text {
                                     anchors.centerIn: parent
                                     text: cell.day > 0 ? cell.day : ""
-                                    color: cell.today ? calendar.pal.bg0 : calendar.pal.fg
+                                    color: cell.today ? calendar.pal.accent : calendar.pal.fg
                                     font.family: calendar.pal.font
                                     font.pixelSize: 11
                                     font.bold: cell.today
@@ -194,20 +163,99 @@ PanelWindow {
                 }
             }
 
+            // month stepping: prev / today / next
+            Row {
+                width: parent.width
+                spacing: 8
+
+                Rectangle {
+                    width: (parent.width - 16) / 3
+                    height: 26
+                    radius: 0
+                    color: prevMouse.containsMouse ? calendar.pal.hover : calendar.pal.row
+                    border.width: 1
+                    border.color: calendar.pal.border
+                    Text {
+                        anchors.centerIn: parent
+                        text: "◀ prev"
+                        color: calendar.pal.fg
+                        font.family: calendar.pal.font
+                        font.pixelSize: 10
+                    }
+                    MouseArea {
+                        id: prevMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: calendar.shiftMonth(-1)
+                    }
+                }
+
+                Rectangle {
+                    width: (parent.width - 16) / 3
+                    height: 26
+                    radius: 0
+                    color: todayMouse.containsMouse ? calendar.pal.hover : calendar.pal.row
+                    border.width: 1
+                    border.color: calendar.pal.border
+                    Text {
+                        anchors.centerIn: parent
+                        text: "today"
+                        color: calendar.pal.fg
+                        font.family: calendar.pal.font
+                        font.pixelSize: 10
+                    }
+                    MouseArea {
+                        id: todayMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: calendar.shownMonth = new Date()
+                    }
+                }
+
+                Rectangle {
+                    width: (parent.width - 16) / 3
+                    height: 26
+                    radius: 0
+                    color: nextMouse.containsMouse ? calendar.pal.hover : calendar.pal.row
+                    border.width: 1
+                    border.color: calendar.pal.border
+                    Text {
+                        anchors.centerIn: parent
+                        text: "next ▶"
+                        color: calendar.pal.fg
+                        font.family: calendar.pal.font
+                        font.pixelSize: 10
+                    }
+                    MouseArea {
+                        id: nextMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: calendar.shiftMonth(1)
+                    }
+                }
+            }
+
             Text {
                 width: parent.width
                 text: "today: " + Qt.formatDate(calendar.today, "ddd, MMM d")
-                color: calendar.pal.fg1
+                    + " · ←/→ switch month · esc close"
+                color: calendar.pal.muted
                 font.family: calendar.pal.font
-                font.pixelSize: 10
-                horizontalAlignment: Text.AlignRight
+                font.pixelSize: 9
             }
         }
     }
 
-    Item {
+    // keep arrow keys / esc while the panel is open
+    FocusScope {
+        id: focusGrab
         anchors.fill: parent
         focus: true
         Keys.onEscapePressed: calendar.shell.closeAllBut("")
+        Keys.onLeftPressed: calendar.shiftMonth(-1)
+        Keys.onRightPressed: calendar.shiftMonth(1)
     }
 }

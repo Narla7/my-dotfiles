@@ -138,6 +138,36 @@ SidePanelWindow {
         favSave.running = true;
     }
 
+    // Ctrl+Shift+Up/Down: move the selected favourite up/down within the
+    // favourites order (newest first = top). No-op on non-favourites.
+    function moveFavourite(delta) {
+        if (launcher.selected < 0 || launcher.selected >= launcher.filtered.length)
+            return;
+        var entry = launcher.filtered[launcher.selected];
+        var id = launcher.normId(entry.id);
+        var order = launcher.favourites.slice();
+        var at = order.indexOf(id);
+        if (at < 0)
+            return;
+        var to = at + delta;
+        if (to < 0 || to >= order.length)
+            return;
+        order.splice(at, 1);
+        order.splice(to, 0, id);
+        launcher.favourites = order;
+        launcher.saveFavourites();
+        launcher.rebuild();
+
+        // keep the moved app selected after the reorder
+        for (var i = 0; i < launcher.filtered.length; i++) {
+            if (launcher.normId(launcher.filtered[i].id) === id) {
+                launcher.selected = i;
+                list.positionViewAtIndex(i, ListView.Contain);
+                break;
+            }
+        }
+    }
+
     onOpenChanged: if (open) launcher.reset()
     Component.onCompleted: {
         launcher.rebuild();
@@ -212,27 +242,27 @@ SidePanelWindow {
                     onTextChanged: launcher.rebuild()
 
                     Keys.onEscapePressed: launcher.shell.closeAllBut("")
-                    Keys.onDownPressed: event => {
-                        launcher.move(1);
-                        event.accepted = true;
-                    }
-                    Keys.onUpPressed: event => {
-                        launcher.move(-1);
-                        event.accepted = true;
-                    }
-                    Keys.onReturnPressed: event => {
-                        launcher.activate();
-                        event.accepted = true;
-                    }
-                    Keys.onEnterPressed: event => {
-                        launcher.activate();
-                        event.accepted = true;
-                    }
+
+                    // all keys in one handler — separate onUpPressed/onDownPressed
+                    // handlers would eat ctrl+shift+up/down before this runs
                     Keys.onPressed: event => {
+                        var mods = event.modifiers & (Qt.ControlModifier | Qt.ShiftModifier);
                         if (event.key === Qt.Key_F && (event.modifiers & Qt.ControlModifier)) {
                             launcher.toggleFavourite();
-                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Up && mods === (Qt.ControlModifier | Qt.ShiftModifier)) {
+                            launcher.moveFavourite(-1);
+                        } else if (event.key === Qt.Key_Down && mods === (Qt.ControlModifier | Qt.ShiftModifier)) {
+                            launcher.moveFavourite(1);
+                        } else if (event.key === Qt.Key_Up) {
+                            launcher.move(-1);
+                        } else if (event.key === Qt.Key_Down) {
+                            launcher.move(1);
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            launcher.activate();
+                        } else {
+                            return;
                         }
+                        event.accepted = true;
                     }
                 }
 
@@ -313,7 +343,7 @@ SidePanelWindow {
                 id: hintRow
                 width: parent.width
                 height: 14
-                text: "ctrl+f fav · enter open · esc close"
+                text: "ctrl+f fav · ctrl+shift+↑↓ reorder favs · enter open · esc close"
                 color: launcher.pal.muted
                 font.family: launcher.pal.font
                 font.pixelSize: 9
