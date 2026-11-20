@@ -34,7 +34,7 @@ excludes=(
     --exclude='emoji-favorites.txt'
 )
 
-for dir in hypr quickshell fuzzel kitty; do
+for dir in hypr quickshell kitty; do
     mkdir -p "$dest/$dir"
     rsync -a --checksum --itemize-changes "${dry[@]}" "${excludes[@]}" "$repo/$dir/" "$dest/$dir/"
 done

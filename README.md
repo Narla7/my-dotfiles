@@ -7,8 +7,7 @@ Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 ## Included
 
 - **Hyprland** — Lua config, Dwindle tiling, keybinds, window rules, media keys
-- **Quickshell** — gruvbox bar, right-edge app launcher, system menu, clipboard, calendar, wallpaper
-- **Fuzzel** — Wi-Fi menu, audio-device menu, and password prompts
+- **Quickshell** — gruvbox bar, right-edge panels (launcher, system menu, clipboard, calendar, wifi, audio, notifications, media), wallpaper
 - **Kitty** — Gruvbox Material theme, 25% transparency, transparent TUI backgrounds
 - **btop** — terminal background transparency support
 
@@ -17,7 +16,6 @@ Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 ```text
 hypr/       Hyprland config and helper scripts
 quickshell/ Bar, right-edge panels, launcher, and theme
-fuzzel/     Fuzzel launcher styling
 kitty/      Kitty config and theme
 btop/       btop config
 ```
@@ -30,12 +28,11 @@ Back up existing configs first, then copy or symlink the directories:
 mkdir -p ~/.config
 cp -a hypr ~/.config/hypr
 cp -a quickshell ~/.config/quickshell
-cp -a fuzzel ~/.config/fuzzel
 cp -a kitty ~/.config/kitty
 cp -a btop ~/.config/btop
 ```
 
-The setup expects Hyprland, Quickshell, Fuzzel, Kitty, btop, NetworkManager,
+The setup expects Hyprland, Quickshell, Kitty, btop, NetworkManager,
 PipeWire/WirePlumber, `hyprshot`, `grim`, `slurp`, and `wl-clipboard`.
 
 ## Main keybinds

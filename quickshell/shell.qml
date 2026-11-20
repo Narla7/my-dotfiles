@@ -14,11 +14,13 @@ ShellRoot {
     property bool systemMenuOpen: false
     property bool notificationCenterOpen: false
     property bool mprisOpen: false
+    property bool wifiOpen: false
+    property bool audioOpen: false
 
     // incremented by Notifications.qml on each notification, cleared by the bell
     property int unreadNotifications: 0
 
-    readonly property bool sidePanelOpen: calendarOpen || clipboardOpen || emojiOpen || launcherOpen || systemMenuOpen || notificationCenterOpen || mprisOpen
+    readonly property bool sidePanelOpen: calendarOpen || clipboardOpen || emojiOpen || launcherOpen || systemMenuOpen || notificationCenterOpen || mprisOpen || wifiOpen || audioOpen
 
     function closeAllBut(which) {
         calendarOpen = which === "calendar";
@@ -28,6 +30,8 @@ ShellRoot {
         systemMenuOpen = which === "system";
         notificationCenterOpen = which === "notifications";
         mprisOpen = which === "mpris";
+        wifiOpen = which === "wifi";
+        audioOpen = which === "audio";
     }
 
     function openClipboard() {
@@ -60,7 +64,7 @@ ShellRoot {
     }
 
     function openWifiMenu() {
-        Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/wifi-menu.sh"]);
+        closeAllBut(wifiOpen ? "" : "wifi");
     }
 
     function openEmojiPicker() {
@@ -68,7 +72,7 @@ ShellRoot {
     }
 
     function openAudioMenu() {
-        Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/audio-menu.sh"]);
+        closeAllBut(audioOpen ? "" : "audio");
     }
 
     Wallpaper {}
@@ -96,6 +100,14 @@ ShellRoot {
     }
 
     MprisPanel {
+        shell: root
+    }
+
+    WifiPanel {
+        shell: root
+    }
+
+    AudioPanel {
         shell: root
     }
 
