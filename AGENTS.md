@@ -1,0 +1,77 @@
+# AGENTS.md
+
+Personal Arch Linux dotfiles: Hyprland (Lua config) + Quickshell + fuzzel + kitty.
+No build, tests, lint, or CI. Verify by syncing to `~/.config` and using the
+running Wayland session.
+
+## Repo is the source of truth — always sync
+
+- After **any** edit here, run `./sync.sh` (preview with `./sync.sh --dry-run`).
+  It mirrors `hypr/`, `quickshell/`, `fuzzel/`, and `kitty/` into
+  `${XDG_CONFIG_HOME:-$HOME/.config}` so repo and live files are identical.
+- Never edit files directly under `~/.config`; edit here, then sync. If a
+  live-only change must be kept, copy it into this repo first, then sync.
+- `sync.sh` overwrites config files but does **not** delete live-only extras
+  (personal state, backups, extra themes). It excludes `*.bak`, `*.bak-*`,
+  `*.log`, `*.swp`, `*~`, and `emoji-favorites.txt`. Deleting a file here leaves
+  the live copy in place; remove that by hand if you really want it gone.
+- Scripts and QML invoke `$HOME/.config/hypr/*.sh` by absolute path, so the live
+  copy is what actually runs; a change is only testable after syncing.
+- Check with `diff -r hypr ~/.config/hypr` (same for the other dirs). Remaining
+  diffs should only be live-only extras such as `emoji-favorites.txt`, backups,
+  and extra kitty/fuzzel themes — never repo files.
+- `hypr/flowstate.sh` is byte-identical to `~/Projects/flowstate/flowstate.sh`
+  (separate repo). Mirror changes to both.
+
+## How it is wired
+
+- `hypr/hyprland.lua` is the active config on Hyprland 0.56+ (machine has
+  0.57.2). `hypr/legacy-hyprland.conf` is a hyprlang fallback for <0.55 only and
+  is ignored on 0.56+ — don't update both expecting an effect.
+- Workspace count is duplicated: `hyprland.lua` rules + keybind loop, and
+  `quickshell/Bar.qml`'s `[1, 2, 3, 4, 5]` model. Change both together.
+- `hypr/*.sh` are mostly fuzzel menus. Each toggle detects its own instance via
+  `pgrep -f 'fuzzel.*--namespace=<name>'`, with the namespace set in
+  `fuzzel/fuzzel.ini` or the script's `fuzzel` call. Renaming one breaks toggling.
+  `toggle-launcher.sh` and `system-menu.sh` are now unused: `SUPER + SPACE` and
+  `SUPER + ESCAPE` go through the QML launcher/system panels.
+- `quickshell/shell.qml` is the entrypoint. It exposes IPC targets `bar`
+  (`wifi`, `audio`, `close`, `clipboard`, `launcher`, `system`) and
+  `notifications` (`dismiss`,
+  `dismissAll`), used as `qs ipc call <target> <fn>`; list live ones with
+  `qs ipc show`.
+- `quickshell/Clipboard.qml` depends on `cliphist` and `wl-clipboard`. Its
+  systemd unit (`~/.config/systemd/user/cliphist.service`) and the package are
+  outside this repo, so don't assume a fresh restore has clipboard history.
+- `hypr/flowstate.sh` writes `~/.local/state/flowstate/bar` as
+  `phase seconds [paused]`; `Bar.qml` parses that exact format. Change the
+  protocol in both or the bar widget breaks.
+- `hypr/emoji-picker.sh` needs `rofi`, `python3`, `wl-copy`, and
+  `/usr/share/noctalia/assets/emoji.json` (noctalia package). Favorites live at
+  `~/.config/hypr/emoji-favorites.txt` and are excluded from `sync.sh`.
+- Theme split is mostly settled on gruvbox: the bar and right-edge panels read
+  `quickshell/Gruvbox.qml` (same palette as the clipboard column); calendar,
+  notifications, wallpaper and fuzzel still use Miasma
+  (`quickshell/Miasma.qml`). Kitty and the emoji picker use Gruvbox Material.
+
+## Verify changes
+
+- Hyprland: the config auto-reloads on save; force it with `hyprctl reload`,
+  then check `hyprctl configerrors` and the Hyprland log for Lua/parse errors.
+- With a Lua config, `hyprctl dispatch` expects a Lua expression
+  (`hyprctl dispatch 'hl.dsp.focus({ workspace = "2" })'`); old hyprlang strings
+  like `hyprctl dispatch workspace 2` fail. Use `hyprctl eval` for ad-hoc Lua.
+- Quickshell: hot reloads saved QML automatically and logs errors to `qs log`;
+  a broken file keeps the last valid version.
+- Shell scripts: `bash -n path.sh`, then `./sync.sh` and run the installed copy.
+  They assume Hyprland, fuzzel, NetworkManager, WirePlumber, and kitty.
+
+## Deliberate quirks — don't "fix" them
+
+- `quirks.skip_non_kms_dmabuf_formats = false` in `hyprland.lua`: required on the
+  old Intel GPU here; otherwise transparent surfaces render black and kitty
+  fails with "No EGLConfigs returned".
+- kitty's `background_opacity 0.5625` with `@1.0` alpha modifiers: this equalizes
+  text and padding alpha. Changing either value reintroduces the visible band.
+- `Bar.qml` reads volume via `wpctl` because Quickshell's PipeWire node binding
+  is broken in 0.3.x; don't replace it with the Qt binding.

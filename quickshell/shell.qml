@@ -3,16 +3,22 @@ import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 
-// Root of Narla's Miasma shell: wallpaper + bar + panels. Fuzzel is the app launcher.
+// Root of Narla's shell: wallpaper + bar + right-edge panels.
 ShellRoot {
     id: root
 
     property bool calendarOpen: false
     property bool clipboardOpen: false
+    property bool launcherOpen: false
+    property bool systemMenuOpen: false
+
+    readonly property bool sidePanelOpen: clipboardOpen || launcherOpen || systemMenuOpen
 
     function closeAllBut(which) {
         calendarOpen = which === "calendar";
         clipboardOpen = which === "clipboard";
+        launcherOpen = which === "launcher";
+        systemMenuOpen = which === "system";
     }
 
     function openClipboard() {
@@ -20,8 +26,11 @@ ShellRoot {
     }
 
     function openAppLauncher() {
-        closeAllBut("");
-        Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/toggle-launcher.sh"]);
+        closeAllBut(launcherOpen ? "" : "launcher");
+    }
+
+    function openSystemMenu() {
+        closeAllBut(systemMenuOpen ? "" : "system");
     }
 
     function openWifiMenu() {
@@ -51,23 +60,31 @@ ShellRoot {
         shell: root
     }
 
-    // Invisible spacer that reserves the right edge while the clipboard centre
+    Launcher {
+        shell: root
+    }
+
+    SystemMenu {
+        shell: root
+    }
+
+    // Invisible spacer that reserves the right edge while any right-side panel
     // is open, so tiled windows slide out of its way. Hyprland ignores
-    // exclusive zones on corner-anchored surfaces, so the panel can't do it
-    // itself — this one spans top->bottom on the right edge instead.
+    // exclusive zones on corner-anchored surfaces, so the panels can't do it
+    // themselves — this one spans top->bottom on the right edge instead.
     PanelWindow {
         anchors {
             top: true
             right: true
             bottom: true
         }
-        margins.right: root.clipboardOpen ? 0 : -2
-        exclusiveZone: root.clipboardOpen ? 380 : 0
+        margins.right: root.sidePanelOpen ? 0 : -2
+        exclusiveZone: root.sidePanelOpen ? 380 : 0
         exclusionMode: ExclusionMode.Normal
         implicitWidth: 1
         color: "transparent"
         WlrLayershell.layer: WlrLayer.Top
-        WlrLayershell.namespace: "quickshell-clipboard-spacer"
+        WlrLayershell.namespace: "quickshell-panel-spacer"
     }
 
     IpcHandler {
@@ -83,6 +100,14 @@ ShellRoot {
 
         function clipboard() {
             root.openClipboard();
+        }
+
+        function launcher() {
+            root.openAppLauncher();
+        }
+
+        function system() {
+            root.openSystemMenu();
         }
 
         function close() {

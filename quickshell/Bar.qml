@@ -31,7 +31,7 @@ PanelWindow {
     property int flowSeconds: 0
     property bool flowPaused: false
 
-    readonly property Miasma pal: Miasma {}
+    readonly property Gruvbox pal: Gruvbox {}
 
     anchors {
         top: true
@@ -39,9 +39,9 @@ PanelWindow {
         right: true
     }
 
-    // when the clipboard centre (gruvbox column, 380px) is open, pull the
+    // when a right-side panel (gruvbox column, 380px) is open, pull the
     // bar's right edge out of the way with the same slide timing
-    margins.right: shell.clipboardOpen ? 380 : 0
+    margins.right: shell.sidePanelOpen ? 380 : 0
     Behavior on margins.right {
         NumberAnimation {
             duration: 200
@@ -255,7 +255,7 @@ PanelWindow {
                 width: 20
                 height: 20
                 radius: 4
-                color: logoMouse.containsMouse ? bar.pal.bg2 : "transparent"
+                color: logoMouse.containsMouse ? bar.pal.hover : "transparent"
 
                 // Real Arch Linux mark, loaded from arch.svg next to this file.
                 Image {
@@ -305,7 +305,7 @@ PanelWindow {
                         Text {
                             anchors.centerIn: parent
                             text: wsPill.modelData
-                            color: bar.pal.fg1
+                            color: bar.pal.muted
                             font.family: bar.pal.font
                             font.pixelSize: 11
                             font.bold: wsPill.focused
@@ -333,7 +333,7 @@ PanelWindow {
                 id: clockText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Qt.formatDateTime(clock.date, "h:mm AP")
-                color: bar.pal.fg1
+                color: bar.pal.muted
                 font.family: bar.pal.font
                 font.pixelSize: 12
                 font.bold: true
@@ -343,7 +343,7 @@ PanelWindow {
                 id: dateText
                 anchors.verticalCenter: parent.verticalCenter
                 text: "· " + Qt.formatDate(clock.date, "ddd, MMM d")
-                color: bar.pal.fg1
+                color: bar.pal.muted
                 font.family: bar.pal.font
                 font.pixelSize: 11
 
@@ -370,7 +370,7 @@ PanelWindow {
                 width: flowRow.implicitWidth + 8
                 height: 22
                 radius: 0
-                color: flowMouse.containsMouse ? bar.pal.bg2 : "transparent"
+                color: flowMouse.containsMouse ? bar.pal.hover : "transparent"
 
                 Row {
                     id: flowRow
@@ -380,8 +380,8 @@ PanelWindow {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "⌖"
-                        color: bar.flowPhase === "idle" ? bar.pal.fg1
-                            : bar.flowPhase === "focus" ? bar.pal.fg1
+                        color: bar.flowPhase === "idle" ? bar.pal.muted
+                            : bar.flowPhase === "focus" ? bar.pal.muted
                             : "#f7768e"
                         font.family: bar.pal.font
                         font.pixelSize: 12
@@ -393,8 +393,8 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: Math.floor(Math.max(0, bar.flowSeconds) / 60) + ":"
                               + ("0" + (Math.max(0, bar.flowSeconds) % 60)).slice(-2)
-                        color: bar.flowPaused ? bar.pal.gray
-                            : bar.flowPhase === "focus" ? bar.pal.fg1
+                        color: bar.flowPaused ? bar.pal.muted
+                            : bar.flowPhase === "focus" ? bar.pal.muted
                             : "#f7768e"
                         font.family: bar.pal.font
                         font.pixelSize: 11
@@ -426,7 +426,7 @@ PanelWindow {
                 width: 26
                 height: 22
                 radius: 0
-                color: clipMouse.containsMouse ? bar.pal.bg2 : "transparent"
+                color: clipMouse.containsMouse ? bar.pal.hover : "transparent"
 
                 Canvas {
                     id: clipIcon
@@ -434,7 +434,7 @@ PanelWindow {
                     height: 14
                     anchors.centerIn: parent
 
-                    property color tint: bar.shell.clipboardOpen ? "#78824b" : bar.pal.fg1
+                    property color tint: bar.shell.clipboardOpen ? bar.pal.accent : bar.pal.muted
 
                     onTintChanged: requestPaint()
 
@@ -480,7 +480,7 @@ PanelWindow {
                         height: 14
                         anchors.verticalCenter: parent.verticalCenter
 
-                        property color tint: bar.pal.fg1
+                        property color tint: bar.pal.muted
 
                         onTintChanged: requestPaint()
 
@@ -504,7 +504,7 @@ PanelWindow {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: bar.ramPercent + "%"
-                        color: bar.pal.fg1
+                        color: bar.pal.muted
                         font.family: bar.pal.font
                         font.pixelSize: 11
                     }
@@ -530,7 +530,7 @@ PanelWindow {
                         text: bar.wifiConnected
                             ? "wifi " + Math.round(bar.signalStrength * 100) + "%"
                             : "wifi off"
-                        color: bar.wifiConnected ? bar.pal.fg1 : bar.pal.gray
+                        color: bar.wifiConnected ? bar.pal.muted : bar.pal.muted
                         font.family: bar.pal.font
                         font.pixelSize: 11
                     }
@@ -563,7 +563,7 @@ PanelWindow {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: bar.volOk ? "vol " + bar.volPercent + "%" : "vol --"
-                        color: (bar.muted || !bar.volOk) ? bar.pal.gray : bar.pal.fg1
+                        color: (bar.muted || !bar.volOk) ? bar.pal.muted : bar.pal.muted
                         font.family: bar.pal.font
                         font.pixelSize: 11
                     }

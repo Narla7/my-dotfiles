@@ -7,8 +7,8 @@ Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 ## Included
 
 - **Hyprland** — Lua config, Dwindle tiling, keybinds, window rules, media keys
-- **Quickshell** — Miasma bar, Arch logo, clock/date calendar, Rockman wallpaper
-- **Fuzzel** — Miasma app launcher, power menu, Wi-Fi menu, and audio-device menu
+- **Quickshell** — gruvbox bar, right-edge app launcher, system menu, clipboard, calendar, wallpaper
+- **Fuzzel** — Wi-Fi menu, audio-device menu, and password prompts
 - **Kitty** — Gruvbox Material theme, 25% transparency, transparent TUI backgrounds
 - **btop** — terminal background transparency support
 
@@ -16,7 +16,7 @@ Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 
 ```text
 hypr/       Hyprland config and helper scripts
-quickshell/ Bar, calendar, wallpaper, and theme
+quickshell/ Bar, right-edge panels, launcher, and theme
 fuzzel/     Fuzzel launcher styling
 kitty/      Kitty config and theme
 btop/       btop config
@@ -41,13 +41,14 @@ PipeWire/WirePlumber, `hyprshot`, `grim`, `slurp`, and `wl-clipboard`.
 ## Main keybinds
 
 - `SUPER + RETURN` — Kitty
-- `SUPER + SPACE` — toggle Fuzzel app launcher
-- `SUPER + ESCAPE` — toggle Fuzzel power menu
+- `SUPER + SPACE` — toggle the Quickshell app launcher (`Ctrl + F` inside pins/unpins the selected app)
+- `SUPER + ESCAPE` — toggle the Quickshell system menu
 - `SUPER + SHIFT + C` — OpenCode CLI in Kitty
 - `SUPER + SHIFT + Z` — Zed
 - `SUPER + 1..5` — switch workspace
 - `SUPER + SHIFT + 1..5` — move window to workspace
 - `PRINT` — toggle screenshot region selector
+- `SUPER + .` — dismiss all notifications
 
 ## License
 

@@ -102,10 +102,10 @@ PanelWindow {
                 }
 
                 Rectangle {
-                    width: 26
+                    width: 34
                     height: 26
                     color: previousMouse.containsMouse ? calendar.pal.bg2 : "transparent"
-                    Text { anchors.centerIn: parent; text: "‹"; color: calendar.pal.fg; font.pixelSize: 20 }
+                    Text { anchors.centerIn: parent; text: "prev"; color: calendar.pal.fg; font.family: calendar.pal.font; font.pixelSize: 11 }
                     MouseArea {
                         id: previousMouse
                         anchors.fill: parent
@@ -115,10 +115,10 @@ PanelWindow {
                 }
 
                 Rectangle {
-                    width: 26
+                    width: 34
                     height: 26
                     color: nextMouse.containsMouse ? calendar.pal.bg2 : "transparent"
-                    Text { anchors.centerIn: parent; text: "›"; color: calendar.pal.fg; font.pixelSize: 20 }
+                    Text { anchors.centerIn: parent; text: "next"; color: calendar.pal.fg; font.family: calendar.pal.font; font.pixelSize: 11 }
                     MouseArea {
                         id: nextMouse
                         anchors.fill: parent

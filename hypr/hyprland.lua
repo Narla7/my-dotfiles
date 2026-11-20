@@ -127,7 +127,7 @@ hl.window_rule({ match = { class = "^(kitty)$" }, rounding = 0, border_size = 2,
 
 -- ──────────────────────────────────────────────────────────── keybinds
 -- apps
-hl.bind(mod .. "SPACE", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/toggle-launcher.sh\""))
+hl.bind(mod .. "SPACE", hl.dsp.exec_cmd("qs ipc call bar launcher"))
 hl.bind(mod .. "SHIFT + RETURN", hl.dsp.exec_cmd("zen-browser"))
 hl.bind(mod .. "SHIFT + F", hl.dsp.exec_cmd("nautilus"))
 hl.bind(mod .. "RETURN", hl.dsp.exec_cmd("kitty"))
@@ -148,7 +148,7 @@ hl.bind(mod .. "W", hl.dsp.window.close())
 hl.bind(mod .. "SHIFT + W", hl.dsp.window.kill())
 hl.bind(mod .. "F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mod .. "V", hl.dsp.window.float({ action = "toggle" }))
-hl.bind(mod .. "ESCAPE", hl.dsp.exec_cmd("bash \"" .. configHome .. "/hypr/system-menu.sh\""))
+hl.bind(mod .. "ESCAPE", hl.dsp.exec_cmd("qs ipc call bar system"))
 
 -- scratchpad overlay: toggles on top of the current workspace, instantly
 -- (specialWorkspace animations are disabled above). Windows stay parked here
