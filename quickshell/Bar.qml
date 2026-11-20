@@ -249,6 +249,19 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10
 
+            // Scratchpad-aware focused workspace. When a special workspace
+            // (id < 0) is toggled on top, keep the underlying workspace's
+            // pill lit so the bar looks unchanged.
+            property int focusedRegularWs: 1
+
+            Connections {
+                target: Hyprland
+                function onFocusedWorkspaceChanged() {
+                    const id = Hyprland.focusedWorkspace?.id;
+                    if (id > 0) leftGroup.focusedRegularWs = id;
+                }
+            }
+
             // Arch Linux mark -> Fuzzel app launcher
             Rectangle {
                 id: logoBox
@@ -283,14 +296,6 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 4
 
-                // Scratchpad-aware focused workspace. When a special workspace
-                // (id < 0) is toggled on top, keep the underlying workspace's
-                // pill lit so the bar looks unchanged.
-                property int focusedRegularWs: {
-                    const id = Hyprland.focusedWorkspace?.id;
-                    return id > 0 ? id : focusedRegularWs;
-                }
-
                 Repeater {
                     model: [1, 2, 3, 4, 5]
 
@@ -305,7 +310,7 @@ PanelWindow {
                         Text {
                             anchors.centerIn: parent
                             text: wsPill.modelData
-                            color: bar.pal.muted
+                            color: wsPill.focused ? "#b0a187" : bar.pal.muted
                             font.family: bar.pal.font
                             font.pixelSize: 11
                             font.bold: wsPill.focused
