@@ -7,3 +7,5 @@
 # Private/local state
 .env
 .env.*
+improvements.txt
+improvements.txt.*
