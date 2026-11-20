@@ -3,6 +3,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import Quickshell.Networking
+import Quickshell.Services.Mpris
 import QtQuick
 import QtQuick.Layouts
 
@@ -30,6 +31,35 @@ PanelWindow {
     property string flowPhase: "idle"
     property int flowSeconds: 0
     property bool flowPaused: false
+
+    // media state (MPRIS): first playing player, else the first known one
+    property var mediaPlayer: null
+    readonly property bool mediaPlaying: mediaPlayer !== null
+        && mediaPlayer.playbackState === MprisPlaybackState.Playing
+
+    function pickMediaPlayer() {
+        var list = Mpris.players.values;
+        var chosen = null;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].playbackState === MprisPlaybackState.Playing) {
+                chosen = list[i];
+                break;
+            }
+        }
+        if (!chosen && list.length > 0)
+            chosen = list[0];
+        bar.mediaPlayer = chosen;
+    }
+
+    Connections {
+        target: Mpris.players
+        function onValuesChanged() { bar.pickMediaPlayer() }
+    }
+
+    Connections {
+        target: bar.mediaPlayer
+        function onPlaybackStateChanged() { bar.pickMediaPlayer() }
+    }
 
     readonly property Gruvbox pal: Gruvbox {}
 
@@ -92,6 +122,7 @@ PanelWindow {
         refreshWifi();
         volProbe.running = true;
         ramProbe.running = true;
+        pickMediaPlayer();
     }
 
     function flowAction(cmd) {
@@ -326,6 +357,59 @@ PanelWindow {
                     }
                 }
             }
+
+            // ---- media (MPRIS): left play/pause, middle next, right prev ----
+            Rectangle {
+                id: mediaWidget
+                visible: bar.mediaPlayer !== null
+                anchors.verticalCenter: parent.verticalCenter
+                width: mediaRow.implicitWidth + 8
+                height: 22
+                radius: 0
+                color: mediaMouse.containsMouse ? bar.pal.hover : "transparent"
+
+                Row {
+                    id: mediaRow
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: bar.mediaPlaying ? "⏸" : "⏵"
+                        color: bar.mediaPlaying ? bar.pal.accent : bar.pal.muted
+                        font.family: bar.pal.font
+                        font.pixelSize: 11
+                    }
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.min(implicitWidth, 110)
+                        elide: Text.ElideRight
+                        text: bar.mediaPlayer ? (bar.mediaPlayer.trackTitle || "unknown") : ""
+                        color: bar.pal.muted
+                        font.family: bar.pal.font
+                        font.pixelSize: 11
+                    }
+                }
+
+                MouseArea {
+                    id: mediaMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+                    onClicked: mouse => {
+                        if (!bar.mediaPlayer)
+                            return;
+                        if (mouse.button === Qt.MiddleButton)
+                            bar.mediaPlayer.next();
+                        else if (mouse.button === Qt.RightButton)
+                            bar.mediaPlayer.previous();
+                        else
+                            bar.mediaPlayer.togglePlaying();
+                    }
+                }
+            }
         }
 
         // -------------------------------------------------- CENTER: clock + calendar
@@ -461,6 +545,65 @@ PanelWindow {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: bar.shell.openClipboard()
+                }
+            }
+
+            // ---- bell: opens the notification centre ----
+            Rectangle {
+                id: bellWidget
+                anchors.verticalCenter: parent.verticalCenter
+                width: 26
+                height: 22
+                radius: 0
+                color: bellMouse.containsMouse ? bar.pal.hover : "transparent"
+
+                Canvas {
+                    id: bellIcon
+                    width: 14
+                    height: 14
+                    anchors.centerIn: parent
+
+                    property color tint: bar.shell.notificationCenterOpen ? bar.pal.accent : bar.pal.muted
+
+                    onTintChanged: requestPaint()
+
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.reset();
+                        ctx.strokeStyle = tint;
+                        ctx.fillStyle = tint;
+                        ctx.lineWidth = 1.2;
+                        // bell body
+                        ctx.beginPath();
+                        ctx.moveTo(2.5, 10.5);
+                        ctx.lineTo(2.5, 7.5);
+                        ctx.arc(7, 7.5, 4.5, Math.PI, 0);
+                        ctx.lineTo(11.5, 10.5);
+                        ctx.closePath();
+                        ctx.stroke();
+                        // clapper
+                        ctx.beginPath();
+                        ctx.arc(7, 12, 1.1, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // unread dot
+                Rectangle {
+                    visible: bar.shell.unreadNotifications > 0
+                    anchors.right: bellIcon.right
+                    anchors.top: bellIcon.top
+                    width: 5
+                    height: 5
+                    color: "#f7768e"
+                }
+
+                MouseArea {
+                    id: bellMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: bar.shell.openNotificationCenter()
                 }
             }
 

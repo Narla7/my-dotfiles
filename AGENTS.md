@@ -37,15 +37,21 @@ running Wayland session.
   `SUPER + ESCAPE` go through the QML launcher/system panels.
 - `quickshell/shell.qml` is the entrypoint. It exposes IPC targets `bar`
   (`wifi`, `audio`, `close`, `clipboard`, `emoji`, `calendar`, `launcher`,
-  `system`) and `notifications` (`dismiss`, `dismissAll`), used as
-  `qs ipc call <target> <fn>`; list live ones with `qs ipc show`.
-- The right-edge side panels (`clipboard`, `emoji`, `launcher`, `system`)
-  all derive from `quickshell/SidePanelWindow.qml` (gruvbox via
+  `system`, `notifications`, `mpris`) and `notifications` (`dismiss`,
+  `dismissAll`), used as `qs ipc call <target> <fn>`; list live ones with
+  `qs ipc show`.
+- The right-edge side panels (`clipboard`, `emoji`, `launcher`, `system`,
+  `notifications` (history centre), `media` (MPRIS)) all derive from
+  `quickshell/SidePanelWindow.qml` (gruvbox via
   `Gruvbox.qml`). Adding one means: new QML file deriving SidePanelWindow,
   an `xxxOpen` property + branch in `closeAllBut()`/`sidePanelOpen` in
   `shell.qml`, an IPC function on the `bar` target, and a keybind in
   `hyprland.lua`. `calendar` is its own PanelWindow (Miasma, top overlay)
   and also lives in that open/close plumbing.
+- `NotificationCenter.qml` reads a `historyModel` owned by `Notifications.qml`
+  (the popup window); `shell.unreadNotifications` drives the bar bell's dot and
+  is cleared whenever the centre opens. `MprisPanel.qml` and the bar's media
+  widget both pick the first *playing* MPRIS player, else the first known one.
 - `quickshell/Clipboard.qml` depends on `cliphist` and `wl-clipboard`. Its
   systemd unit (`~/.config/systemd/user/cliphist.service`) and the package are
   outside this repo, so don't assume a fresh restore has clipboard history.

@@ -13,6 +13,11 @@ PanelWindow {
 
     property int uidCounter: 0
 
+    // chronological history (oldest first, capped) for the notification centre
+    // panel; records survive popup dismissal
+    readonly property int maxHistory: 50
+    property ListModel historyModel: ListModel { }
+
     ListModel { id: notifModel }
 
     anchors {
@@ -59,6 +64,10 @@ PanelWindow {
         }
     }
 
+    function clearHistory() {
+        historyModel.clear();
+    }
+
     NotificationServer {
         id: server
         bodySupported: true
@@ -83,17 +92,36 @@ PanelWindow {
             notifWindow.uidCounter++;
             var currentUid = notifWindow.uidCounter;
 
+            var appName = (n.appName && n.appName !== "") ? n.appName : "System";
+            var summary = (n.summary && n.summary !== "") ? n.summary : "";
+            var body = (n.body && n.body !== "") ? n.body : "";
+            var image = (n.image && n.image !== "") ? n.image : "";
+
             notifModel.insert(0, {
                 "uid": currentUid,
                 "notif": n,
-                "appName": (n.appName && n.appName !== "") ? n.appName : "System",
-                "summary": (n.summary && n.summary !== "") ? n.summary : "",
-                "body": (n.body && n.body !== "") ? n.body : "",
+                "appName": appName,
+                "summary": summary,
+                "body": body,
                 "appIcon": (n.appIcon && n.appIcon !== "") ? n.appIcon : "",
-                "image": (n.image && n.image !== "") ? n.image : "",
+                "image": image,
                 "urgency": n.urgency,
                 "expireTimeout": n.expireTimeout
             });
+
+            // history record for the centre (plain copies, not the notif object)
+            if (notifWindow.historyModel.count >= notifWindow.maxHistory)
+                notifWindow.historyModel.remove(0, 1);
+            notifWindow.historyModel.append({
+                "appName": appName,
+                "summary": summary,
+                "body": body,
+                "image": image,
+                "timestamp": Qt.formatDateTime(new Date(), "hh:mm")
+            });
+
+            if (notifWindow.shell)
+                notifWindow.shell.unreadNotifications++;
         }
     }
 

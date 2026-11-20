@@ -135,6 +135,10 @@ hl.bind(mod .. "E", hl.dsp.exec_cmd("qs ipc call bar emoji"))
 hl.bind(mod .. "C", hl.dsp.exec_cmd("qs ipc call bar clipboard"))
 -- calendar sidebar
 hl.bind(mod .. "M", hl.dsp.exec_cmd("qs ipc call bar calendar"))
+-- media (MPRIS) sidebar
+hl.bind(mod .. "SHIFT + M", hl.dsp.exec_cmd("qs ipc call bar mpris"))
+-- notification centre sidebar
+hl.bind(mod .. "N", hl.dsp.exec_cmd("qs ipc call bar notifications"))
 hl.bind(mod .. "SHIFT + O", hl.dsp.exec_cmd("obsidian"))
 hl.bind(mod .. "SHIFT + S", hl.dsp.exec_cmd("spotify"))
 hl.bind(mod .. "SHIFT + C", hl.dsp.exec_cmd("kitty -e opencode"))
