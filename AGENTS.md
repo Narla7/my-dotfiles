@@ -36,19 +36,29 @@ running Wayland session.
   `toggle-launcher.sh` and `system-menu.sh` are now unused: `SUPER + SPACE` and
   `SUPER + ESCAPE` go through the QML launcher/system panels.
 - `quickshell/shell.qml` is the entrypoint. It exposes IPC targets `bar`
-  (`wifi`, `audio`, `close`, `clipboard`, `launcher`, `system`) and
-  `notifications` (`dismiss`,
-  `dismissAll`), used as `qs ipc call <target> <fn>`; list live ones with
-  `qs ipc show`.
+  (`wifi`, `audio`, `close`, `clipboard`, `emoji`, `calendar`, `launcher`,
+  `system`) and `notifications` (`dismiss`, `dismissAll`), used as
+  `qs ipc call <target> <fn>`; list live ones with `qs ipc show`.
+- The right-edge side panels (`clipboard`, `emoji`, `launcher`, `system`)
+  all derive from `quickshell/SidePanelWindow.qml` (gruvbox via
+  `Gruvbox.qml`). Adding one means: new QML file deriving SidePanelWindow,
+  an `xxxOpen` property + branch in `closeAllBut()`/`sidePanelOpen` in
+  `shell.qml`, an IPC function on the `bar` target, and a keybind in
+  `hyprland.lua`. `calendar` is its own PanelWindow (Miasma, top overlay)
+  and also lives in that open/close plumbing.
 - `quickshell/Clipboard.qml` depends on `cliphist` and `wl-clipboard`. Its
   systemd unit (`~/.config/systemd/user/cliphist.service`) and the package are
   outside this repo, so don't assume a fresh restore has clipboard history.
 - `hypr/flowstate.sh` writes `~/.local/state/flowstate/bar` as
   `phase seconds [paused]`; `Bar.qml` parses that exact format. Change the
   protocol in both or the bar widget breaks.
-- `hypr/emoji-picker.sh` needs `rofi`, `python3`, `wl-copy`, and
-  `/usr/share/noctalia/assets/emoji.json` (noctalia package). Favorites live at
-  `~/.config/hypr/emoji-favorites.txt` and are excluded from `sync.sh`.
+- The emoji picker is a QML panel now (`quickshell/EmojiPicker.qml`,
+  opened by `mod+E` via `qs ipc call bar emoji`). `hypr/emoji-picker.sh` +
+  `emoji-picker.rasi` are the retired rofi implementation, kept for
+  reference — don't rewire `mod+E` back to the script. Favorites live at
+  `~/.config/hypr/emoji-favorites.txt` (one emoji per line, excluded from
+  `sync.sh`) and are shared by both implementations; the emoji data source
+  is `/usr/share/noctalia/assets/emoji.json` (noctalia package).
 - Theme split is mostly settled on gruvbox: the bar and right-edge panels read
   `quickshell/Gruvbox.qml` (same palette as the clipboard column); calendar,
   notifications, wallpaper and fuzzel still use Miasma
@@ -65,6 +75,26 @@ running Wayland session.
   a broken file keeps the last valid version.
 - Shell scripts: `bash -n path.sh`, then `./sync.sh` and run the installed copy.
   They assume Hyprland, fuzzel, NetworkManager, WirePlumber, and kitty.
+- Side panels can be driven headlessly: toggle with `qs ipc call bar <target>`,
+  confirm with `hyprctl layers | grep <namespace>`, close with
+  `qs ipc call bar close`. `qs log` must stay free of QML/JS errors
+  (ignore its unrelated Qt textinput/portal warnings).
+- Limits hit so far: `hyprctl getoption` can't read animation leaves on
+  0.57 (only plain options like `animations:enabled`), and `hl.get_config()`
+  inside `hyprctl eval` doesn't expose them either — animation settings are
+  verified by reading the config file, not by querying Hyprland.
+
+## QML gotchas
+
+- In a `TextInput`, specific handlers (`Keys.onUpPressed`,
+  `Keys.onReturnPressed`, …) run **before** a generic `Keys.onPressed` and
+  accept the event, so modified combos like Ctrl+Shift+Up never reach it.
+  This silently broke favourite reordering once. Use one `Keys.onPressed`
+  handler that switches on key + modifiers and `event.accepted = true`.
+- rofi was dropped for the emoji picker because its keybind/scroll behavior
+  couldn't be verified from a script (`rofi -dmenu` exits instantly, rc=1,
+  when spawned outside an interactive grab) and the user kept fighting its
+  navigation. Prefer QML panels for anything keyboard-driven.
 
 ## Deliberate quirks — don't "fix" them
 
