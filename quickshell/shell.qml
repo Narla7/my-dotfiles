@@ -17,11 +17,12 @@ ShellRoot {
     property bool wifiOpen: false
     property bool audioOpen: false
     property bool flowstateOpen: false
+    property bool sysmonOpen: false
 
     // incremented by Notifications.qml on each notification, cleared by the bell
     property int unreadNotifications: 0
 
-    readonly property bool sidePanelOpen: calendarOpen || clipboardOpen || emojiOpen || launcherOpen || systemMenuOpen || notificationCenterOpen || mprisOpen || wifiOpen || audioOpen || flowstateOpen
+    readonly property bool sidePanelOpen: calendarOpen || clipboardOpen || emojiOpen || launcherOpen || systemMenuOpen || notificationCenterOpen || mprisOpen || wifiOpen || audioOpen || flowstateOpen || sysmonOpen
 
     function closeAllBut(which) {
         calendarOpen = which === "calendar";
@@ -34,6 +35,7 @@ ShellRoot {
         wifiOpen = which === "wifi";
         audioOpen = which === "audio";
         flowstateOpen = which === "flowstate";
+        sysmonOpen = which === "sysmon";
     }
 
     function openClipboard() {
@@ -81,6 +83,10 @@ ShellRoot {
         closeAllBut(flowstateOpen ? "" : "flowstate");
     }
 
+    function openSysmon() {
+        closeAllBut(sysmonOpen ? "" : "sysmon");
+    }
+
     Wallpaper {}
 
     Bar {
@@ -118,6 +124,10 @@ ShellRoot {
     }
 
     FlowstatePanel {
+        shell: root
+    }
+
+    SystemMonitor {
         shell: root
     }
 
@@ -193,6 +203,10 @@ ShellRoot {
 
         function flowstate() {
             root.openFlowstate();
+        }
+
+        function sysmon() {
+            root.openSysmon();
         }
 
         function close() {
