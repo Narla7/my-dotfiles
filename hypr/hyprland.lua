@@ -139,19 +139,21 @@ hl.bind(mod .. "M", hl.dsp.exec_cmd("qs ipc call bar calendar"))
 hl.bind(mod .. "SHIFT + M", hl.dsp.exec_cmd("qs ipc call bar mpris"))
 -- notification centre sidebar
 hl.bind(mod .. "N", hl.dsp.exec_cmd("qs ipc call bar notifications"))
+-- wifi sidebar (audio lives on mod+A)
+hl.bind(mod .. "W", hl.dsp.exec_cmd("qs ipc call bar wifi"))
 hl.bind(mod .. "SHIFT + O", hl.dsp.exec_cmd("obsidian"))
 hl.bind(mod .. "SHIFT + S", hl.dsp.exec_cmd("spotify"))
 hl.bind(mod .. "SHIFT + C", hl.dsp.exec_cmd("kitty -e opencode"))
 hl.bind(mod .. "SHIFT + Z", hl.dsp.exec_cmd("zeditor"))
-hl.bind(mod .. "A", hl.dsp.exec_cmd("hermes desktop --skip-build"))
+hl.bind(mod .. "A", hl.dsp.exec_cmd("qs ipc call bar audio"))
 
 -- window management
 -- close() asks the app to close just the focused window (graceful, like
 -- clicking its X button). kill() SIGKILLs the entire client process, which
 -- also takes down every other window of that app (browsers, Electron, etc.
 -- run all windows in one process) — so it's only for frozen apps.
-hl.bind(mod .. "W", hl.dsp.window.close())
-hl.bind(mod .. "SHIFT + W", hl.dsp.window.kill())
+hl.bind(mod .. "Q", hl.dsp.window.close())
+hl.bind(mod .. "SHIFT + Q", hl.dsp.window.kill())
 hl.bind(mod .. "F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mod .. "V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mod .. "ESCAPE", hl.dsp.exec_cmd("qs ipc call bar system"))
@@ -160,6 +162,9 @@ hl.bind(mod .. "ESCAPE", hl.dsp.exec_cmd("qs ipc call bar system"))
 -- (specialWorkspace animations are disabled above). Windows stay parked here
 -- across workspace switches.
 hl.bind(mod .. "S", hl.dsp.workspace.toggle_special("scratch"))
+-- park the focused window in the scratchpad without following it there
+-- (follow = false), so the view stays put; mod+S shows the stash afterwards.
+hl.bind(mod .. "CTRL + S", hl.dsp.window.move({ workspace = "special:scratch", follow = false }))
 
 -- workspaces 1-5: switch + move window
 for i = 1, 5 do
@@ -213,4 +218,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("quickshell")
 end)
 
-hl.bind(mod .. "SHIFT + L", hl.dsp.exec_cmd("kitty -e bash " .. configHome .. "/hypr/flowstate.sh run"))
+-- flowstate focus timer: side panel (started/paused/stopped from the panel or
+-- the bar widget; the session itself runs headless via flowstate.sh)
+hl.bind(mod .. "L", hl.dsp.exec_cmd("qs ipc call bar flowstate"))

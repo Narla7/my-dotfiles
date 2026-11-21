@@ -75,7 +75,7 @@ SidePanelWindow {
         // ---- player name / empty state -----------------------------------
         Text {
             width: parent.width
-            text: mediaPanel.player ? (mediaPanel.player.identity || "player") : "no player"
+            text: mediaPanel.player ? (mediaPanel.player.identity || "player") : "nothing is playing"
             color: mediaPanel.pal.muted
             font.family: mediaPanel.pal.font
             font.pixelSize: 10
@@ -112,7 +112,7 @@ SidePanelWindow {
         // ---- track info ----------------------------------------------------
         Text {
             width: parent.width
-            text: mediaPanel.player ? (mediaPanel.player.trackTitle || "unknown title") : "—"
+            text: mediaPanel.player ? (mediaPanel.player.trackTitle || "nothing is playing") : "nothing is playing"
             color: mediaPanel.pal.fg
             font.family: mediaPanel.pal.font
             font.pixelSize: 13

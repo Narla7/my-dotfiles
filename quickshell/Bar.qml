@@ -385,7 +385,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         width: Math.min(implicitWidth, 110)
                         elide: Text.ElideRight
-                        text: bar.mediaPlayer ? (bar.mediaPlayer.trackTitle || "unknown") : ""
+                        text: bar.mediaPlayer ? (bar.mediaPlayer.trackTitle || "nothing is playing") : "nothing is playing"
                         color: bar.pal.muted
                         font.family: bar.pal.font
                         font.pixelSize: 11
@@ -502,7 +502,7 @@ PanelWindow {
                         } else if (mouse.button === Qt.RightButton) {
                             bar.flowAction("stop");
                         } else {
-                            bar.flowAction("toggle");
+                            bar.shell.closeAllBut(bar.shell.flowstateOpen ? "" : "flowstate");
                         }
                     }
                 }

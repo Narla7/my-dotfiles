@@ -16,11 +16,12 @@ ShellRoot {
     property bool mprisOpen: false
     property bool wifiOpen: false
     property bool audioOpen: false
+    property bool flowstateOpen: false
 
     // incremented by Notifications.qml on each notification, cleared by the bell
     property int unreadNotifications: 0
 
-    readonly property bool sidePanelOpen: calendarOpen || clipboardOpen || emojiOpen || launcherOpen || systemMenuOpen || notificationCenterOpen || mprisOpen || wifiOpen || audioOpen
+    readonly property bool sidePanelOpen: calendarOpen || clipboardOpen || emojiOpen || launcherOpen || systemMenuOpen || notificationCenterOpen || mprisOpen || wifiOpen || audioOpen || flowstateOpen
 
     function closeAllBut(which) {
         calendarOpen = which === "calendar";
@@ -32,6 +33,7 @@ ShellRoot {
         mprisOpen = which === "mpris";
         wifiOpen = which === "wifi";
         audioOpen = which === "audio";
+        flowstateOpen = which === "flowstate";
     }
 
     function openClipboard() {
@@ -75,6 +77,10 @@ ShellRoot {
         closeAllBut(audioOpen ? "" : "audio");
     }
 
+    function openFlowstate() {
+        closeAllBut(flowstateOpen ? "" : "flowstate");
+    }
+
     Wallpaper {}
 
     Bar {
@@ -108,6 +114,10 @@ ShellRoot {
     }
 
     AudioPanel {
+        shell: root
+    }
+
+    FlowstatePanel {
         shell: root
     }
 
@@ -179,6 +189,10 @@ ShellRoot {
 
         function mpris() {
             root.openMpris();
+        }
+
+        function flowstate() {
+            root.openFlowstate();
         }
 
         function close() {
