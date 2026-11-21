@@ -20,6 +20,11 @@ running Wayland session.
 - Check with `diff -r hypr ~/.config/hypr` (same for the other dirs). Remaining
   diffs should only be live-only extras such as `emoji-favorites.txt`, backups,
   and extra kitty themes — never repo files.
+- `install.sh` is the one-shot installer for fresh machines: it verifies the
+  checkout, installs the runtime packages (official repos only), backs up live
+  configs to `~/.local/state/rice-backup/`, calls `sync.sh` for the mirroring,
+  then installs + enables `systemd/user/cliphist.service`. Keep the mirror
+  semantics in `sync.sh`; don't duplicate them in `install.sh`.
 - `hypr/flowstate.sh` is byte-identical to `~/Projects/flowstate/flowstate.sh`
   (separate repo). Mirror changes to both.
 

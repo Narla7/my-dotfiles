@@ -17,23 +17,26 @@ Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 hypr/       Hyprland config and helper scripts
 quickshell/ Bar, right-edge panels, launcher, and theme
 kitty/      Kitty config and theme
-btop/       btop config
+systemd/    cliphist clipboard-history user service
 ```
 
 ## Install
 
-Back up existing configs first, then copy or symlink the directories:
+Arch Linux only, from the repo root:
 
 ```bash
-mkdir -p ~/.config
-cp -a hypr ~/.config/hypr
-cp -a quickshell ~/.config/quickshell
-cp -a kitty ~/.config/kitty
-cp -a btop ~/.config/btop
+./install.sh                 # packages + configs + cliphist service
+./install.sh --dry-run       # preview every action, change nothing
+./install.sh --no-packages   # skip pacman (configs only)
 ```
 
-The setup expects Hyprland, Quickshell, Kitty, btop, NetworkManager,
-PipeWire/WirePlumber, `hyprshot`, `grim`, `slurp`, and `wl-clipboard`.
+The installer installs the runtime packages (all official repos — Hyprland,
+Quickshell, kitty, NetworkManager, PipeWire/WirePlumber, cliphist,
+wl-clipboard, libnotify, playerctl, brightnessctl, hyprshot/grim/slurp,
+noctalia, JetBrains Mono fonts), backs up any existing configs to
+`~/.local/state/rice-backup/`, mirrors `hypr/ quickshell/ kitty/` via
+`./sync.sh` (live-only files like `emoji-favorites.txt` are preserved), and
+enables the `cliphist` user service. Then log into a Hyprland session.
 
 ## Main keybinds
 
