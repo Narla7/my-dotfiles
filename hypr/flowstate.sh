@@ -264,7 +264,9 @@ draw() { # $1 clock color, $2 label, $3 progress color, $4 dots (colored)
 # child. No window rules, no dispatches: Hyprland tiles the timer kitty like
 # any other window, and the clock centers itself inside that terminal.
 renderer_pid() {
-  pgrep -f -- "^bash .*flowstate\.sh run$" | head -1
+  # no ^bash anchor: the renderer may be launched as "bash ..." or via an
+  # absolute path ("/usr/bin/bash ..."), only the script + "run" tail is stable
+  pgrep -f -- "flowstate\.sh run$" | head -1
 }
 
 launch() {
@@ -290,7 +292,7 @@ case "${1:-toggle}" in
     [[ -n $pid ]] && kill -USR1 "$pid" 2>/dev/null
     ;;
   stop)
-    pkill -TERM -f -- "^bash .*flowstate\.sh run$" 2>/dev/null
+    pkill -TERM -f -- "flowstate\.sh run$" 2>/dev/null
     write_state idle 0
     ;;
   *)

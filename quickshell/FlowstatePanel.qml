@@ -26,6 +26,8 @@ SidePanelWindow {
     // the state file (the script doesn't report cycle count itself)
     property int doneBlocks: 0
     property string lastPhase: "idle"
+    // timestamp of the last Enter/primary press, for the debounce below
+    property real lastPrimary: 0
 
     function fmt(s) {
         s = Math.max(0, s);
