@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — one-shot installer for narla's Hyprland + Quickshell shell.
+# install.sh — one-shot installer for the Reckoner shell (Hyprland + Quickshell).
 #
 # Arch Linux only. In order it:
 #   1. sanity-checks the checkout and the machine
@@ -34,7 +34,7 @@ case "${1:-}" in
     --no-packages) SKIP_PKGS=1 ;;
     -h|--help)
         cat <<'EOF'
-install.sh — one-shot installer for narla's Hyprland + Quickshell shell.
+install.sh — one-shot installer for the Reckoner shell (Hyprland + Quickshell).
 
 Arch Linux only. It installs the runtime packages, backs up any existing
 configs to ~/.local/state/rice-backup/<timestamp>/, mirrors hypr/,

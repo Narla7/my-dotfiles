@@ -1,6 +1,6 @@
-# Narla's dotfiles
+# Reckoner
 
-My Arch Linux Hyprland + Quickshell setup. 
+A complete gruvbox Wayland shell for Arch Linux — Hyprland + Quickshell bar, side panels, launcher, notifications, emoji picker, and dotfiles. My Arch Linux Hyprland + Quickshell setup.
 
 Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 

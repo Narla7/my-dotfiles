@@ -1,4 +1,4 @@
-# AGENTS.md
+# Reckoner
 
 Personal Arch Linux dotfiles: Hyprland (Lua config) + Quickshell + kitty.
 No build, tests, lint, or CI. Verify by syncing to `~/.config` and using the
