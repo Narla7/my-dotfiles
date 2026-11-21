@@ -221,6 +221,3 @@ end)
 -- flowstate focus timer: side panel (started/paused/stopped from the panel or
 -- the bar widget; the session itself runs headless via flowstate.sh)
 hl.bind(mod .. "L", hl.dsp.exec_cmd("qs ipc call bar flowstate"))
-
--- system monitor: circular usage gauges for cpu/ram/disk/temp
-hl.bind(mod .. "R", hl.dsp.exec_cmd("qs ipc call bar sysmon"))
