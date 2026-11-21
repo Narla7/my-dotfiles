@@ -9,7 +9,8 @@ Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 - **Hyprland** — Lua config, Dwindle tiling, keybinds, window rules, media keys
 - **Quickshell** — gruvbox bar, right-edge panels (launcher, system menu, clipboard, calendar, wifi, audio, notifications, media), wallpaper
 - **Kitty** — Gruvbox Material theme, 25% transparency, transparent TUI backgrounds
-- **btop** — terminal background transparency support
+- **btop** — Gruvbox config for terminal resource monitoring
+- **Starship** — gruvbox prompt (works in any shell; fish setup below)
 
 ## Layout
 
@@ -17,6 +18,8 @@ Here is the youtube Video link: https://youtu.be/LRPfbdlwcIs?si=jAXinFnIYocbr1lF
 hypr/       Hyprland config and helper scripts
 quickshell/ Bar, right-edge panels, launcher, and theme
 kitty/      Kitty config and theme
+starship/   Starship prompt config
+btop/       btop config
 systemd/    cliphist clipboard-history user service
 ```
 
@@ -37,6 +40,17 @@ noctalia, JetBrains Mono fonts), backs up any existing configs to
 `~/.local/state/rice-backup/`, mirrors `hypr/ quickshell/ kitty/` via
 `./sync.sh` (live-only files like `emoji-favorites.txt` are preserved), and
 enables the `cliphist` user service. Then log into a Hyprland session.
+
+## Starship (any shell)
+
+The prompt config is synced to `~/.config/starship/starship.toml`. Activate it in
+your shell init, e.g. fish (`~/.config/fish/config.fish`):
+
+```fish
+starship init fish | source
+```
+
+or zsh / bash: `eval "$(starship init zsh)"` / `eval "$(starship init bash)"`.
 
 ## Main keybinds
 

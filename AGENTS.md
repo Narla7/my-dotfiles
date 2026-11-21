@@ -31,8 +31,7 @@ running Wayland session.
 ## How it is wired
 
 - `hypr/hyprland.lua` is the active config on Hyprland 0.56+ (machine has
-  0.57.2). `hypr/legacy-hyprland.conf` is a hyprlang fallback for <0.55 only and
-  is ignored on 0.56+ — don't update both expecting an effect.
+  0.57.2). There is no hyprlang fallback — Lua configs are required.
 - Workspace count is duplicated: `hyprland.lua` rules + keybind loop, and
   `quickshell/Bar.qml`'s `[1, 2, 3, 4, 5]` model. Change both together.
 - Fuzzel was fully removed: the launcher, system menu, wifi menu and audio menu
@@ -63,11 +62,12 @@ running Wayland session.
   `phase seconds [paused]`; `Bar.qml` parses that exact format. Change the
   protocol in both or the bar widget breaks.
 - The emoji picker is a QML panel now (`quickshell/EmojiPicker.qml`,
-  opened by `mod+E` via `qs ipc call bar emoji`). `hypr/emoji-picker.sh` +
-  `emoji-picker.rasi` are the retired rofi implementation, kept for
-  reference — don't rewire `mod+E` back to the script. Favorites live at
+  opened by `mod+E` via `qs ipc call bar emoji`). The old rofi implementation
+  (`hypr/emoji-picker.sh` + `hypr/emoji-picker.rasi`) was deleted; don't
+  reintroduce fuzzel or rofi for anything keyboard-driven — prefer QML
+  panels. Favorites live at
   `~/.config/hypr/emoji-favorites.txt` (one emoji per line, excluded from
-  `sync.sh`) and are shared by both implementations; the emoji data source
+  `sync.sh`) is shared by the picker; the emoji data source
   is `/usr/share/noctalia/assets/emoji.json` (noctalia package).
 - Theme split is mostly settled on gruvbox: the bar and right-edge panels read
   `quickshell/Gruvbox.qml` (same palette as the clipboard column); calendar,
