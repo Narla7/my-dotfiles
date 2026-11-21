@@ -504,7 +504,7 @@ SidePanelWindow {
                         anchors.left: parent.left
                         anchors.leftMargin: 6
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: passInput.text === ""
+                        visible: passInput.text === "" && passTyping.empty
                         text: "password"
                         color: wifiPanel.pal.muted
                         font.family: wifiPanel.pal.font
@@ -515,7 +515,8 @@ SidePanelWindow {
                         id: passInput
                         anchors.fill: parent
                         anchors.margins: 5
-                        color: wifiPanel.pal.fg
+                        // the real text is invisible — TypingFeedback renders it
+                        color: "transparent"
                         font.family: wifiPanel.pal.font
                         font.pixelSize: 10
                         verticalAlignment: TextInput.AlignVCenter
@@ -531,6 +532,16 @@ SidePanelWindow {
                             wifiPanel.pendingSsid = "";
                             wifiPanel.errorText = "";
                         }
+                    }
+
+                    TypingFeedback {
+                        id: passTyping
+                        input: passInput
+                        pal: wifiPanel.pal
+                        fontPixelSize: 10
+                        masked: true
+                        anchors.fill: parent
+                        anchors.margins: 5
                     }
                 }
 

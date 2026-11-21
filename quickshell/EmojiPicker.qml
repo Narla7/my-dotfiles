@@ -235,9 +235,10 @@ SidePanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     height: parent.height
-                    color: picker.pal.fg
-                    selectionColor: picker.pal.border
-                    selectedTextColor: picker.pal.fg
+                    // the real text is invisible — TypingFeedback renders it
+                    color: "transparent"
+                    selectionColor: "transparent"
+                    selectedTextColor: "transparent"
                     font.family: picker.pal.font
                     font.pixelSize: 12
                     clip: true
@@ -275,10 +276,20 @@ SidePanelWindow {
                     }
                 }
 
+                TypingFeedback {
+                    id: typing
+                    input: input
+                    pal: picker.pal
+                    anchors.left: input.left
+                    anchors.right: input.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: promptRow.height
+                }
+
                 Text {
                     anchors.left: input.left
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: input.text.length === 0
+                    visible: typing.empty
                     text: "search emoji"
                     color: picker.pal.muted
                     font.family: picker.pal.font

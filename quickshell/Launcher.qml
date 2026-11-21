@@ -139,72 +139,6 @@ SidePanelWindow {
         favSave.running = true;
     }
 
-    // serpantinum-style typing feedback: keystroke sound + per-character pop row.
-    // The TextInput keeps all real behaviour (keys, focus, selection, caret
-    // position) but its own text is transparent; what you see is the char row
-    // below, whose items animate in with the launcher's OutBack overshoot.
-    SoundEffect {
-        id: keySound
-        source: "assets/type.wav"
-        volume: 0.7
-    }
-
-    TextMetrics {
-        id: charMetrics
-        font.family: launcher.pal.font
-        font.pixelSize: 12
-        text: "0"
-    }
-    // monospace slot advance: char width + serpantinum's charSpacing of 1
-    readonly property real slotStep: charMetrics.width + 1
-
-    ListModel { id: charModel }
-    property real scrollShift: 0
-    readonly property real scrollOffset: launcher.scrollShift
-    Behavior on scrollShift { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-
-    // diff-sync the model against the text, exactly like serpantinum's
-    // syncModel(): only the changed middle range is inserted/removed so the
-    // add/remove transitions fire on real edits, not on untouched chars.
-    function syncChars() {
-        var str = input.text;
-        var old = charModel.count;
-        var prefix = 0;
-        while (prefix < old && prefix < str.length
-               && charModel.get(prefix).char === str[prefix])
-            prefix++;
-        var suffix = 0;
-        while (suffix < (old - prefix) && suffix < (str.length - prefix)
-               && charModel.get(old - 1 - suffix).char === str[str.length - 1 - suffix])
-            suffix++;
-        if (old - prefix - suffix > 0)
-            charModel.remove(prefix, old - prefix - suffix);
-        var ins = str.slice(prefix, str.length - suffix);
-        for (var i = 0; i < ins.length; i++)
-            charModel.insert(prefix + i, { char: ins[i] });
-        launcher.updateScroll();
-    }
-
-    // keep the caret visible once the query overflows the field
-    function updateScroll() {
-        var total = charRow.contentWidth;
-        var visible = charArea.width;
-        if (visible <= 0)
-            return;
-        if (total <= visible) {
-            launcher.scrollShift = 0;
-            return;
-        }
-        var curX = input.cursorPosition * launcher.slotStep;
-        var minOffset = visible - total;
-        var margin = 4;
-        var curScreenX = curX + launcher.scrollShift;
-        if (curScreenX < margin)
-            launcher.scrollShift = Math.min(0, Math.max(minOffset, margin - curX));
-        else if (curScreenX > visible - margin - 2)
-            launcher.scrollShift = Math.min(0, Math.max(minOffset, visible - margin - 2 - curX));
-    }
-
     // Ctrl+Shift+Up/Down: move the selected favourite up/down within the
     // favourites order (newest first = top). No-op on non-favourites.
     function moveFavourite(delta) {
@@ -299,7 +233,7 @@ SidePanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     height: parent.height
-                    // the real text is invisible — the char row renders it
+                    // the real text is invisible — TypingFeedback renders it
                     color: "transparent"
                     selectionColor: "transparent"
                     selectedTextColor: "transparent"
@@ -307,12 +241,7 @@ SidePanelWindow {
                     font.pixelSize: 12
                     clip: true
                     selectByMouse: true
-                    onTextChanged: {
-                        launcher.syncChars();
-                        keySound.play();
-                        launcher.rebuild();
-                    }
-                    onCursorPositionChanged: launcher.updateScroll()
+                    onTextChanged: launcher.rebuild()
 
                     Keys.onEscapePressed: launcher.shell.closeAllBut("")
 
@@ -340,83 +269,20 @@ SidePanelWindow {
                 }
 
                 // visible text: one item per char with serpantinum's pop
-                Item {
-                    id: charArea
+                TypingFeedback {
+                    id: typing
+                    input: input
+                    pal: launcher.pal
                     anchors.left: input.left
                     anchors.right: input.right
                     anchors.verticalCenter: parent.verticalCenter
-                    height: parent.height
-                    clip: true
-
-                    ListView {
-                        id: charRow
-                        x: launcher.scrollOffset
-                        width: contentWidth
-                        height: parent.height
-                        anchors.verticalCenter: parent.verticalCenter
-                        orientation: ListView.Horizontal
-                        interactive: false
-                        spacing: 1
-                        model: charModel
-
-                        // serpantinum's add transition: scale 0.3->1 OutBack
-                        // overshoot 3.2, rise from +10, fade in 150ms
-                        add: Transition {
-                            ParallelAnimation {
-                                NumberAnimation { property: "scale"; from: 0.3; to: 1.0; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 3.2 }
-                                NumberAnimation { property: "y"; from: 10; to: 0; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 2.6 }
-                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 150; easing.type: Easing.OutCubic }
-                            }
-                        }
-                        // exits fall up and shrink; survivors spring back (displaced)
-                        remove: Transition {
-                            ParallelAnimation {
-                                NumberAnimation { property: "scale"; to: 0.3; duration: 160; easing.type: Easing.InBack }
-                                NumberAnimation { property: "y"; to: -8; duration: 160; easing.type: Easing.InCubic }
-                                NumberAnimation { property: "opacity"; to: 0; duration: 144; easing.type: Easing.InCubic }
-                            }
-                        }
-                        displaced: Transition {
-                            NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.OutBack; easing.overshoot: 1.6 }
-                        }
-
-                        delegate: Text {
-                            text: model.char
-                            color: launcher.pal.fg
-                            font.family: launcher.pal.font
-                            font.pixelSize: 12
-                        }
-                    }
-
-                    // animated caret at the cursor's slot
-                    Rectangle {
-                        id: caret
-                        width: 2
-                        height: 14
-                        color: launcher.pal.accent
-                        visible: input.activeFocus
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: input.cursorPosition * launcher.slotStep + launcher.scrollOffset
-
-                        Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-
-                        SequentialAnimation on opacity {
-                            running: caret.visible
-                            loops: Animation.Infinite
-                            NumberAnimation { to: 0; duration: 100; easing.type: Easing.InQuad }
-                            PauseAnimation { duration: 400 }
-                            NumberAnimation { to: 1; duration: 100; easing.type: Easing.OutQuad }
-                            PauseAnimation { duration: 400 }
-                        }
-                    }
+                    height: promptRow.height
                 }
 
                 Text {
                     anchors.left: input.left
                     anchors.verticalCenter: parent.verticalCenter
-                    // charModel can lag the text by a frame — check both so the
-                    // placeholder never flashes over a popped-in char
-                    visible: input.text.length === 0 && charModel.count === 0
+                    visible: typing.empty
                     text: "search applications"
                     color: launcher.pal.muted
                     font.family: launcher.pal.font

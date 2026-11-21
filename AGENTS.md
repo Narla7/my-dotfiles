@@ -38,6 +38,17 @@ running Wayland session.
   are all QML side panels now. The old `toggle-launcher.sh`, `system-menu.sh`,
   `wifi-menu.sh` and `audio-menu.sh` fuzzel scripts were deleted — don't
   reintroduce fuzzel for anything keyboard-driven; prefer QML panels.
+- Every text input in a QML panel uses the serpantinum typing effect
+  (`quickshell/TypingFeedback.qml`): the `TextInput` keeps all behaviour but
+  renders `color: "transparent"`, and `TypingFeedback` overlays it with a
+  per-character OutBack pop row, an animated caret, and the keystroke sound
+  (`quickshell/assets/type.wav`, via QtMultimedia `SoundEffect` — requires
+  `qt6-multimedia`). Anchor the component over the input's text area, set
+  `input`/`pal`, and bind placeholders to its `empty` property; the sound and
+  char sync are auto-wired through `Connections`. For password fields set
+  `masked: true` (dots pop instead of chars). Any new panel with a text
+  input must use it — don't ship a bare `TextInput` that renders its own
+  visible text.
 - `quickshell/shell.qml` is the entrypoint. It exposes IPC targets `bar`
   (`wifi`, `audio`, `close`, `clipboard`, `emoji`, `calendar`, `launcher`,
   `system`, `notifications`, `mpris`) and `notifications` (`dismiss`,
