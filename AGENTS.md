@@ -7,7 +7,7 @@ running Wayland session.
 ## Repo is the source of truth — always sync
 
 - After **any** edit here, run `./sync.sh` (preview with `./sync.sh --dry-run`).
-  It mirrors `hypr/`, `quickshell/`, and `kitty/` into
+  It mirrors `hypr/`, `quickshell/`, `kitty/`, and `starship/` into
   `${XDG_CONFIG_HOME:-$HOME/.config}` so repo and live files are identical.
 - Never edit files directly under `~/.config`; edit here, then sync. If a
   live-only change must be kept, copy it into this repo first, then sync.
@@ -73,6 +73,9 @@ running Wayland session.
   `quickshell/Gruvbox.qml` (same palette as the clipboard column); calendar,
   notifications, and wallpaper still use Miasma
   (`quickshell/Miasma.qml`). Kitty and the emoji picker use Gruvbox Material.
+- The starship prompt config lives in `starship/starship.toml` (gruvbox palette
+  matching Gruvbox.qml). Fish loads it via `starship init fish | source` in
+  `~/.config/fish/config.fish`, which is live-only and outside this repo.
 
 ## Verify changes
 

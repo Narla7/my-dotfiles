@@ -5,7 +5,7 @@
 #   1. sanity-checks the checkout and the machine
 #   2. installs every runtime package (all official repos — no AUR helper)
 #   3. backs up existing live configs under ~/.local/state/rice-backup/
-#   4. mirrors hypr/, quickshell/, kitty/ with ./sync.sh (same excludes and
+#   4. mirrors hypr/, quickshell/, kitty/, starship/ with ./sync.sh (same excludes and
 #      never-delete semantics; live-only files such as emoji-favorites.txt,
 #      personal kitty themes and backups are preserved)
 #   5. installs and enables the cliphist systemd user service
@@ -38,7 +38,7 @@ install.sh — one-shot installer for narla's Hyprland + Quickshell shell.
 
 Arch Linux only. It installs the runtime packages, backs up any existing
 configs to ~/.local/state/rice-backup/<timestamp>/, mirrors hypr/,
-quickshell/ and kitty/ into $XDG_CONFIG_HOME via ./sync.sh, and enables the
+quickshell/, kitty/ and starship/ into $XDG_CONFIG_HOME via ./sync.sh, and enables the
 cliphist systemd user service.
 
 Usage: ./install.sh [--dry-run] [--no-packages] [--help]
@@ -65,7 +65,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 dest="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 for f in sync.sh hypr/hyprland.lua quickshell/shell.qml kitty/kitty.conf \
-         systemd/user/cliphist.service; do
+         starship/starship.toml systemd/user/cliphist.service; do
     [ -f "$REPO/$f" ] || die "not a rice checkout — missing $REPO/$f"
 done
 
@@ -104,6 +104,7 @@ packages=(
     hyprshot grim slurp
     noctalia sound-theme-freedesktop
     ttf-jetbrains-mono ttf-jetbrains-mono-nerd
+    starship
     rsync
 )
 
@@ -167,6 +168,7 @@ fi
 backup_rel hypr
 backup_rel quickshell
 backup_rel kitty
+backup_rel starship
 if [ "$backed_up" -eq 1 ]; then
     say "backup dir: $backup"
 else
@@ -174,7 +176,7 @@ else
 fi
 
 # ──────────────────────────────────────────────────────────────── mirror
-step "mirror configs (hypr, quickshell, kitty)"
+step "mirror configs (hypr, quickshell, kitty, starship)"
 if [ "$DRY" -eq 1 ]; then
     run "$REPO/sync.sh" --dry-run
 else
@@ -224,7 +226,7 @@ if [ "$DRY" -eq 1 ]; then
     say "skipping binary check in dry-run"
 else
     for c in quickshell qs kitty hyprctl hyprshot grim slurp wpctl pw-play \
-             cliphist wl-copy wl-paste nmcli playerctl brightnessctl notify-send rsync; do
+             cliphist wl-copy wl-paste nmcli playerctl brightnessctl notify-send rsync starship; do
         command -v "$c" >/dev/null 2>&1 || missbin+=("$c")
     done
 fi
@@ -256,7 +258,7 @@ if [ "$DRY" -eq 1 ]; then
     say "dry run complete — nothing was changed"
     exit 0
 fi
-say "installed to: $dest/{hypr,quickshell,kitty} (+ systemd/user/cliphist.service)"
+say "installed to: $dest/{hypr,quickshell,kitty,starship} (+ systemd/user/cliphist.service)"
 say "preserved as-is: emoji-favorites.txt, ~/.local/state/{flowstate,narla-shell}, live-only extras"
 say ""
 say "next:"
@@ -265,5 +267,5 @@ say "    if you installed inside a live session, Hyprland auto-reloads and"
 say "    quickshell hot-reloads its QML — check 'qs log' and 'hyprctl configerrors'"
 say "  - super+enter kitty · super+space launcher · super+esc system menu · print screenshot"
 if [ "$backed_up" -eq 1 ]; then
-    say "  - rollback: cp -a $backup/{hypr,quickshell,kitty} $dest/"
+    say "  - rollback: cp -a $backup/{hypr,quickshell,kitty,starship} $dest/"
 fi

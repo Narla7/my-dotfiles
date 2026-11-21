@@ -1,0 +1,88 @@
+# Starship prompt — gruvbox-dark, matching quickshell/Gruvbox.qml and kitty.
+# Loaded by fish via `starship init fish | source` in ~/.config/fish/config.fish
+# (that init line is live-only; only this file is mirrored by sync.sh).
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = true
+palette = "gruvbox"
+
+format = """
+$os\
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$rust\
+$go\
+$cmd_duration\
+$line_break\
+$character"""
+
+# Same palette as Gruvbox.qml; accent is the shell's olive highlight.
+[palettes.gruvbox]
+bg      = "#282828"
+bg1     = "#3c3836"
+bg2     = "#504945"
+fg      = "#ebdbb2"
+muted   = "#a89984"
+red     = "#cc241d"
+green   = "#98971a"
+yellow  = "#d79921"
+blue    = "#458588"
+purple  = "#b16286"
+aqua    = "#689d6a"
+orange  = "#d65d0e"
+accent  = "#78824b"
+
+[character]
+success_symbol = "[❯](accent)"
+error_symbol = "[❯](red)"
+
+[os]
+disabled = false
+format = "[$symbol]($style) "
+symbols.Arch = ""
+style = "muted"
+
+[directory]
+style = "bold blue"
+truncation_length = 3
+truncate_to_repo = true
+read_only = " 󰌾"
+format = "[$path]($style)[$read_only](red) "
+
+[git_branch]
+symbol = ""
+style = "purple"
+format = "[$symbol $branch]($style) "
+
+[git_status]
+style = "orange"
+format = "[$all_status$ahead_behind]($style) "
+
+[cmd_duration]
+min_time = 2_000
+style = "yellow"
+format = "[ $duration]($style) "
+
+[nodejs]
+symbol = ""
+style = "green"
+format = "[$symbol($version)]($style) "
+
+[python]
+symbol = ""
+style = "yellow"
+format = "[${symbol}${pyversion}( $virtualenv)]($style) "
+
+[rust]
+symbol = "󱘗"
+style = "orange"
+format = "[$symbol($version)]($style) "
+
+[go]
+symbol = ""
+style = "aqua"
+format = "[$symbol($version)]($style) "
